@@ -14,6 +14,61 @@ Run the following in your console to install with Bundler:
 
   $ bundle install
 
+=== Setting up development and test databases
+
+Make sure you have the correct database config in +database.yml+ and run:
+
+  $ rake db:install
+
+== Using the console
+
+The <tt>DirectiveRecord</tt> repo is provided with a <tt>script/console</tt> which you can use for development / testing purposes. Please note that you have executed <tt>rake db:install</tt> on beforehand.
+
+Run the following command in your console:
+
+  $ script/console
+  Loading DirectiveRecord development environment (0.1.0)
+  [1] pry(main)> puts Article.to_qry(:select => "title, author.name, GROUP_CONCAT(tags.name)")
+  SELECT `a`.title, `author`.name, GROUP_CONCAT(`tags`.name)
+  FROM articles `a`
+  LEFT JOIN users `author` ON `author`.id = `a`.author_id
+  LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
+  LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
+  => nil
+  [2] pry(main)> Article.qry(:select => "title, author.name, GROUP_CONCAT(tags.name)")
+  => [["Behold! It's DirectiveRecord!", "Paul Engel", "ruby,gem"]]
+  [3] pry(main)> puts Article.where("tags.name LIKE ?", "%ruby%").to_qry
+  SELECT *
+  FROM articles `a`
+  LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
+  LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
+  WHERE (`tags`.name LIKE '%ruby%')
+  => nil
+  [4] pry(main)> Article.where("tags.name LIKE ?", "%ruby%").qry
+  => [[1,
+    "Behold! It's DirectiveRecord!",
+    "A thin layer on top of ActiveRecord for using paths within queries without thinking about association joins",
+    1,
+    2,
+    2013-08-01 12:00:00 +0200,
+    2013-08-01 10:00:00 +0200,
+    2013-08-01 11:00:00 +0200]]
+
+== Testing
+
+Run the following command for testing:
+
+  $ rake
+
+You can also run a single test file:
+
+  $ ruby test/unit/test_directive_record.rb
+
+=== TODO
+
+* Refactor <tt>DirectiveRecord::Query</tt> related classes
+* Add tests
+
 === License
 
 Copyright (c) 2014 Paul Engel, released under the MIT License
