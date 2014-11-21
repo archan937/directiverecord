@@ -1,4 +1,7 @@
+ENV["GEM_ENV"] = "test"
+
 require_relative "test_helper/coverage"
+require_relative "test_helper/database"
 
 require "minitest/autorun"
 require "mocha/setup"
@@ -9,3 +12,5 @@ end
 
 require "bundler"
 Bundler.require :default, :development
+
+require_relative "../app/models"

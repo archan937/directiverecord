@@ -5,4 +5,5 @@
 Gemfile.lock
 doc
 pkg
+*.log
 test/coverage
