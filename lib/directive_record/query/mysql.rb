@@ -25,87 +25,30 @@ module DirectiveRecord
         "`#{sql_alias}`"
       end
 
-      def finalize_options(options)
-        regexp = /^\S+/
+      def path_delimiter
+        "."
+      end
 
-        options.deep_dup.tap do |options|
-          options[:group_by] = %w(NULL) if options[:group_by] == :all
+      def select_aggregate_sql(method, path)
+        "#{method.to_s.upcase}(IFNULL(#{path}, 0))"
+      end
 
-          [:select, :group_by].each do |sym|
-            options[sym] = [options[sym]].flatten if options[sym]
-          end
+      def select_aggregate_sql_alias(method, path)
+        quote_alias "#{method}:#{path}"
+      end
 
-          scales = options[:select].uniq.inject({}) do |hash, x|
-            hash[x] = column_for(x).try :scale
-            hash
-          end
+      def group_by_all_sql
+        "NULL"
+      end
 
-          aggregates = {}
-          options[:aliases] = {}
-
-          options[:select] = options[:select].inject([]) do |array, path|
-            select = path
-            select_alias = nil
-
-            if aggregate_method = (options[:aggregates] || {})[path]
-              select = "#{aggregate_method.to_s.upcase}(IFNULL(#{path}, 0))"
-              select_alias = aggregates[path] = quote_alias("#{aggregate_method}:#{path}")
-            end
-            if scale = scales[path]
-              select = "ROUND(#{select}, #{scale})"
-              select_alias ||= quote_alias(path)
-            end
-            if options[:numerize_aliases]
-              select = select.gsub(/ AS .*$/, "")
-              select_alias = options[:aliases][prepend_base_alias(base, base_alias, select_alias || select)] = "c#{array.size + 1}"
-            end
-
-            array << [select, select_alias].compact.join(" AS ")
-            array
-          end
-
-          where, having = (options[:where] || []).partition{|statement| !aggregates.keys.include?(statement.strip.match(regexp).to_s)}
-
-          options[:where] = where
-          unless (attrs = base.scope_attributes).blank?
-            sql = base.send(:sanitize_sql_for_conditions, attrs, "").gsub(/``.`(\w+)`/) { $1 }
-            options[:where] << sql
-          end
-
-          options[:having] = having.collect{|statement| statement.strip.gsub(regexp){|path| aggregates[path]}}
-          [:where, :having].each do |key|
-            options[key] = options[key].collect{|x| "(#{x})"}.join(" AND ")
-          end
-
-          options[:order_by] ||= begin
-            (options[:group_by] || []).collect do |path|
-              direction = (path.to_s == "date") ? "DESC" : "ASC"
-              "#{path} #{direction}"
+      def wrap_up_options!(options)
+        return unless options[:numerize_aliases]
+        [:group_by, :having, :order_by].each do |key|
+          if sql = options[key]
+            options[:aliases].each do |pattern, replacement|
+              sql.gsub! pattern, replacement
             end
           end
-
-          options[:order_by] = [options[:order_by]].flatten.collect do |x|
-            path, direction = x.split " "
-
-            scale = scales[path]
-            select = begin
-              if options[:select].none?{|x| x.match(/ AS #{path}$/)} && (aggregate_method = (options[:aggregates] || {})[path])
-                "#{aggregate_method.to_s.upcase}(IFNULL(#{path}, 0))"
-              else
-                path
-              end
-            end
-
-            "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}"
-          end
-
-          [:group_by, :having, :order_by].each do |key|
-            if sql = options[key]
-              options[:aliases].each{|pattern, replacement| sql.gsub! pattern, replacement}
-            end
-          end if options[:numerize_aliases]
-
-          options.reject!{|k, v| v.blank?}
         end
       end
 

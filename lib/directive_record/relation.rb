@@ -7,7 +7,7 @@ module DirectiveRecord
       @active_relation = active_relation
     end
 
-    def query_options(select = nil)
+    def qry_options(select = nil)
       {
         :select => select || select_values.collect{|x| sql_aliases_to_paths(x)},
         :where => where_values.collect{|x| sql_aliases_to_paths(x)},

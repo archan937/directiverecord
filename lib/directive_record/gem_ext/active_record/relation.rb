@@ -1,12 +1,16 @@
 module ActiveRecord
   class Relation
 
-    def query_options(select = nil)
-      DirectiveRecord::Relation.new(self).query_options(select)
+    def qry_options(select = nil)
+      DirectiveRecord::Relation.new(self).qry_options(select)
     end
 
-    def to_qry
-      klass.to_qry query_options
+    def to_qry(select = nil)
+      klass.to_qry qry_options(select)
+    end
+
+    def qry(select = nil)
+      klass.qry qry_options(select)
     end
 
   end

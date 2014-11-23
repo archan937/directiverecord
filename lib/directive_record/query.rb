@@ -17,7 +17,7 @@ module DirectiveRecord
       elsif connection_class.include?("monetdb")
         MonetDB
       else
-        raise NotImplmentedError
+        raise NotImplementedError
       end
     end
 

@@ -28,14 +28,14 @@ Run the following command in your console:
 
   $ script/console
   Loading DirectiveRecord development environment (0.1.0)
-  [1] pry(main)> puts Article.to_qry(:select => "title, author.name, GROUP_CONCAT(tags.name)")
+  [1] pry(main)> puts Article.to_qry("title, author.name, GROUP_CONCAT(tags.name)")
   SELECT `a`.title, `author`.name, GROUP_CONCAT(`tags`.name)
   FROM articles `a`
   LEFT JOIN users `author` ON `author`.id = `a`.author_id
   LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
   LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
   => nil
-  [2] pry(main)> Article.qry(:select => "title, author.name, GROUP_CONCAT(tags.name)")
+  [2] pry(main)> Article.qry("title", "author.name", "GROUP_CONCAT(tags.name)")
   => [["Behold! It's DirectiveRecord!", "Paul Engel", "ruby,gem"]]
   [3] pry(main)> puts Article.where("tags.name LIKE ?", "%ruby%").to_qry
   SELECT *
