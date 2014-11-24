@@ -5,6 +5,10 @@ module Unit
     class TestMySQL < MiniTest::Test
 
       describe DirectiveRecord::Query::MySQL do
+        before do
+          DirectiveRecord::Query.expects(:class_for).returns(DirectiveRecord::Query::MySQL).at_least_once
+        end
+
         it "generates the expected SQL" do
           assert_equal(
             strip(
@@ -44,8 +48,4 @@ module Unit
 
     end
   end
-end
-
-def strip(sql)
-  sql.strip.gsub(/^\s+/m, "")
 end

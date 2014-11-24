@@ -49,7 +49,3 @@ module Unit
     end
   end
 end
-
-def strip(sql)
-  sql.strip.gsub(/^\s+/m, "")
-end
