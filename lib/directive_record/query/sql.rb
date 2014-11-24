@@ -2,20 +2,21 @@ module DirectiveRecord
   module Query
     class SQL
 
-      delegate :columns_hash, :to => :base
-
       def initialize(base)
         @base = base
       end
 
       def to_sql(*args)
         options = extract_options(args)
-
         validate_options! options
+
         prepare_options! options
-        finalize_options! options
+        normalize_options! options
+
         parse_joins! options
+
         prepend_base_alias! options
+        finalize_options! options
 
         compose_sql options
       end
@@ -26,12 +27,16 @@ module DirectiveRecord
         raise NotImplementedError
       end
 
+      def aggregate_delimiter
+        raise NotImplementedError
+      end
+
       def select_aggregate_sql(method, path)
         raise NotImplementedError
       end
 
       def select_aggregate_sql_alias(method, path)
-        raise NotImplementedError
+        quote_alias("#{method}#{aggregate_delimiter}#{path}")
       end
 
       def group_by_all_sql
@@ -62,16 +67,15 @@ module DirectiveRecord
 
       def prepare_options!(options); end
 
-      def finalize_options!(options)
-        finalize_select!(options)
-        finalize_where!(options)
-        finalize_group_by!(options)
-        finalize_order_by!(options)
-        wrap_up_options!(options)
+      def normalize_options!(options)
+        normalize_select!(options)
+        normalize_where!(options)
+        normalize_group_by!(options)
+        normalize_order_by!(options)
         options.reject!{|k, v| v.blank?}
       end
 
-      def finalize_select!(options)
+      def normalize_select!(options)
         select = to_array! options, :select
         select.uniq!
 
@@ -82,33 +86,34 @@ module DirectiveRecord
           hash
         end
 
-        options[:aggregates] = {}
+        options[:aggregated] = {}
         options[:aliases] = {}
 
-        select.collect! do |path|
+        options[:select] = options[:select].inject([]) do |array, path|
           sql, sql_alias = path, nil
 
           if aggregate_method = (options[:aggregates] || {})[path]
             sql = select_aggregate_sql(aggregate_method, path)
-            sql_alias = aggregates[path] = select_aggregate_sql_alias(aggregate_method, path)
+            sql_alias = options[:aggregated][path] = select_aggregate_sql_alias(aggregate_method, path)
           end
           if scale = options[:scales][path]
             sql = "ROUND(#{sql}, #{scale})"
             sql_alias ||= quote_alias(path)
           end
           if options[:numerize_aliases]
-            sql.gsub!(/ AS .*$/, "")
-            sql_alias = options[:aliases][prepend_base_alias(base, base_alias, sql_alias || sql)] = "c#{array.size + 1}"
+            sql = sql.gsub(/ AS .*$/, "")
+            sql_alias = options[:aliases][prepend_base_alias(sql_alias || sql)] = "c#{array.size + 1}"
           end
 
-          [sql, sql_alias].compact.join(" AS ")
+          array << [sql, sql_alias].compact.join(" AS ")
+          array
         end
       end
 
-      def finalize_where!(options)
+      def normalize_where!(options)
         regexp = /^\S+/
 
-        where, having = (to_array!(options, :where) || []).partition{|statement| !options[:aggregates].keys.include?(statement.strip.match(regexp).to_s)}
+        where, having = (to_array!(options, :where) || []).partition{|statement| !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s)}
 
         unless (attrs = base.scope_attributes).blank?
           sql = base.send(:sanitize_sql_for_conditions, attrs, "").gsub(/``.`(\w+)`/) { $1 }
@@ -116,7 +121,7 @@ module DirectiveRecord
         end
 
         options[:where], options[:having] = where, having.collect do |statement|
-          statement.strip.gsub(regexp){|path| options[:aggregates][path]}
+          statement.strip.gsub(regexp){|path| options[:aggregated][path]}
         end
 
         [:where, :having].each do |key|
@@ -125,12 +130,12 @@ module DirectiveRecord
         end
       end
 
-      def finalize_group_by!(options)
+      def normalize_group_by!(options)
         group_by = to_array! options, :group_by
         group_by.clear.push(group_by_all_sql) if group_by == [:all]
       end
 
-      def finalize_order_by!(options)
+      def normalize_order_by!(options)
         options[:order_by] ||= (options[:group_by] || []).collect do |path|
           direction = (path.to_s == "date") ? "DESC" : "ASC"
           "#{path} #{direction}"
@@ -150,8 +155,6 @@ module DirectiveRecord
         end
       end
 
-      def wrap_up_options!(options); end
-
       def to_array!(options, key)
         if value = options[key]
           options[key] = [value].flatten
@@ -167,29 +170,6 @@ module DirectiveRecord
         model.columns_hash[column]
       rescue
         nil
-      end
-
-      def prepend_base_alias!(options)
-        [:select, :where, :having, :group_by, :order_by].each do |key|
-          if value = options[key]
-            options[key] = prepend_base_alias value, options[:aliases]
-          end
-        end
-      end
-
-      def prepend_base_alias(sql, aliases = {})
-        columns = columns_hash.keys
-        sql = sql.join ", " if sql.is_a?(Array)
-        sql.gsub(/("[^"]*"|'[^']*'|[a-zA-Z_]+(\.[a-zA-Z_]+)*)/) do
-          columns.include?($1) ? "#{base_alias}.#{$1}" : begin
-            if (string = $1).match /^([a-zA-Z_\.]+)\.([a-zA-Z_]+)$/
-              path, column = $1, $2
-              "#{quote_alias path.gsub(".", path_delimiter)}.#{column}"
-            else
-              string
-            end
-          end
-        end
       end
 
       def parse_joins!(options)
@@ -241,6 +221,31 @@ module DirectiveRecord
           end
         end.uniq
       end
+
+      def prepend_base_alias!(options)
+        [:select, :where, :having, :group_by, :order_by].each do |key|
+          if value = options[key]
+            options[key] = prepend_base_alias value, options[:aliases]
+          end
+        end
+      end
+
+      def prepend_base_alias(sql, aliases = {})
+        columns = base.columns_hash.keys
+        sql = sql.join ", " if sql.is_a?(Array)
+        sql.gsub(/("[^"]*"|'[^']*'|[a-zA-Z_#{aggregate_delimiter}]+(\.[a-zA-Z_]+)*)/) do
+          columns.include?($1) ? "#{base_alias}.#{$1}" : begin
+            if (string = $1).match /^([a-zA-Z_\.]+)\.([a-zA-Z_]+)$/
+              path, column = $1, $2
+              "#{quote_alias path.gsub(".", path_delimiter)}.#{column}"
+            else
+              string
+            end
+          end
+        end
+      end
+
+      def finalize_options!(options); end
 
       def compose_sql(options)
         sql = ["SELECT #{options[:select]}", "FROM #{base.table_name} #{base_alias}", options[:joins]].compact

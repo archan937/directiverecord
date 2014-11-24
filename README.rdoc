@@ -24,7 +24,7 @@ Make sure you have the correct database config in +database.yml+ and run:
 
 The <tt>DirectiveRecord</tt> repo is provided with a <tt>script/console</tt> which you can use for development / testing purposes. Please note that you have executed <tt>rake db:install</tt> on beforehand.
 
-Run the following command in your console:
+You can run the following commands in your console for instance:
 
   $ script/console
   Loading DirectiveRecord development environment (0.1.0)
@@ -66,8 +66,7 @@ You can also run a single test file:
 
 === TODO
 
-* Refactor <tt>DirectiveRecord::Query</tt> related classes
-* Add tests
+* Add more tests
 
 === License
 
