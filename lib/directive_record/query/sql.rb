@@ -31,16 +31,16 @@ module DirectiveRecord
         raise NotImplementedError
       end
 
-      def select_aggregate_sql(method, path)
+      def group_by_all_sql
         raise NotImplementedError
+      end
+
+      def select_aggregate_sql(method, path)
+        "#{method.to_s.upcase}(#{path})"
       end
 
       def select_aggregate_sql_alias(method, path)
         quote_alias("#{method}#{aggregate_delimiter}#{path}")
-      end
-
-      def group_by_all_sql
-        raise NotImplementedError
       end
 
       def base

@@ -12,10 +12,6 @@ module DirectiveRecord
         ":"
       end
 
-      def select_aggregate_sql(method, path)
-        "#{method.to_s.upcase}(IFNULL(#{path}, 0))"
-      end
-
       def group_by_all_sql
         "NULL"
       end

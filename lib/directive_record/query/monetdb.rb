@@ -12,10 +12,6 @@ module DirectiveRecord
         "__"
       end
 
-      def select_aggregate_sql(method, path)
-        "#{method.to_s.upcase}(#{path})"
-      end
-
       def group_by_all_sql
         "all_rows"
       end
