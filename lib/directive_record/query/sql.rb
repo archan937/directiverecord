@@ -114,7 +114,12 @@ module DirectiveRecord
         regexp = /^\S+/
 
         where, having = (to_array!(options, :where) || []).partition do |statement|
-          !column_for(statement.strip.match(regexp).to_s).nil?
+          !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
+          statement.downcase.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
+                            .scan(/([a-zA-Z_\.]+)?\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s)/)
+                            .all? do |(path, operator)|
+            path && column_for(path)
+          end
         end
 
         unless (attrs = base.scope_attributes).blank?
