@@ -147,16 +147,21 @@ module DirectiveRecord
           segments = x.split " "
           direction = segments.pop if %w(asc desc).include?(segments[-1].downcase)
           path = segments.join " "
-          scale = options[:scales][path]
-          select = begin
-            if aggregate_method = (options[:aggregates] || {})[path]
-              select_aggregate_sql(aggregate_method, path)
-            else
-              path
+
+          if path != group_by_all_sql
+            scale = options[:scales][path]
+            select = begin
+              if aggregate_method = (options[:aggregates] || {})[path]
+                select_aggregate_sql(aggregate_method, path)
+              else
+                path
+              end
             end
+            "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}".strip
           end
-          "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}".strip
         end
+
+        options[:order_by].compact!
       end
 
       def to_array!(options, key)
@@ -255,7 +260,7 @@ module DirectiveRecord
         sql = ["SELECT #{options[:select]}", "FROM #{base.table_name} #{base_alias}", options[:joins]].compact
 
         [:where, :group_by, :having, :order_by, :limit, :offset].each do |key|
-          if value = options[key]
+          unless (value = options[key]).blank?
             keyword = key.to_s.upcase.gsub("_", " ")
             sql << "#{keyword} #{value}"
           end
