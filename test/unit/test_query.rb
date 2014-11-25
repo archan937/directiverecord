@@ -7,16 +7,16 @@ module Unit
       describe ".new" do
         it "returns the appropriate query instance" do
           instance = mock
-          instance.expects(:new).with(Article).returns("<query instance>")
+          instance.expects(:new).with(Office).returns("SELECT * FROM offices")
           DirectiveRecord::Query.expects(:class_for).with("activerecord::connectionadapters::mysql2adapter").returns(instance)
-          assert_equal "<query instance>", DirectiveRecord::Query.new(Article)
+          assert_equal "SELECT * FROM offices", DirectiveRecord::Query.new(Office)
         end
       end
 
       describe ".class_for" do
         describe "when MySQL" do
           it "returns the DirectiveRecord::Query::MySQL class" do
-            assert_equal DirectiveRecord::Query::MySQL, DirectiveRecord::Query.send(:class_for, "activerecord::mysql::connection")
+            assert_equal DirectiveRecord::Query::MySQL, DirectiveRecord::Query.send(:class_for, "activerecord::connectionadapters::mysql2adapter")
           end
         end
 

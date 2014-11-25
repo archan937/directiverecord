@@ -22,37 +22,32 @@ Make sure you have the correct database config in +database.yml+ and run:
 
 == Using the console
 
-The <tt>DirectiveRecord</tt> repo is provided with a <tt>script/console</tt> which you can use for development / testing purposes. Please note that you have executed <tt>rake db:install</tt> on beforehand.
+The <tt>DirectiveRecord</tt> repo is provided with a <tt>script/console</tt> which you can use for development / testing purposes. Please note that you need to have executed <tt>rake db:install</tt> on beforehand.
 
 You can run the following commands in your console for instance:
 
   $ script/console
   Loading DirectiveRecord development environment (0.1.0)
-  [1] pry(main)> puts Article.to_qry("title, author.name, GROUP_CONCAT(tags.name)")
-  SELECT `a`.title, `author`.name, GROUP_CONCAT(`tags`.name)
-  FROM articles `a`
-  LEFT JOIN users `author` ON `author`.id = `a`.author_id
-  LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
+  [1] pry(main)> puts Customer.to_qry("id, name, COUNT(orders.id) AS order_count, GROUP_CONCAT(DISTINCT tags.name) AS tags")
+  SELECT `c`.id, `c`.name, COUNT(`orders`.id) AS order_count, GROUP_CONCAT(DISTINCT `tags`.name) AS tags
+  FROM customers `c`
+  LEFT JOIN orders `orders` ON `orders`.customer_id = `c`.id
+  LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
   LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
   => nil
-  [2] pry(main)> Article.qry("title", "author.name", "GROUP_CONCAT(tags.name)")
-  => [["Behold! It's DirectiveRecord!", "Paul Engel", "ruby,gem"]]
-  [3] pry(main)> puts Article.where("tags.name LIKE ?", "%ruby%").to_qry
+  [2] pry(main)> Customer.qry("id", "name", "COUNT(orders.id) AS order_count", "GROUP_CONCAT(DISTINCT tags.name) AS tags")
+  => [[103, "Atelier graphique", 330, "gifts,posters"]]
+  [3] pry(main)> puts Customer.where("tags.name LIKE ?", "%gifts%").to_qry
   SELECT *
-  FROM articles `a`
-  LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
+  FROM customers `c`
+  LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
   LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
-  WHERE (`tags`.name LIKE '%ruby%')
+  WHERE (`tags`.name LIKE '%gifts%')
   => nil
-  [4] pry(main)> Article.where("tags.name LIKE ?", "%ruby%").qry
-  => [[1,
-    "Behold! It's DirectiveRecord!",
-    "A thin layer on top of ActiveRecord for using paths within queries without thinking about association joins",
-    1,
-    2,
-    2013-08-01 12:00:00 +0200,
-    2013-08-01 10:00:00 +0200,
-    2013-08-01 11:00:00 +0200]]
+  [4] pry(main)> Customer.where("tags.name LIKE ?", "%gifts%").qry
+  => [[112, 1166, "Signal Gift Stores", "Jean", "King", "7025551838", "8489 Strong St.", nil, "83030", "Las Vegas", "NV", "USA", 71800.0, 112, 1, 1, "gifts"],
+   [119, 1370, "La Rochelle Gifts", "Janine ", "Labrune", "40.67.8555", "67, rue des Cinquante Otages", nil, "44000", "Nantes", nil, "France", 118200.0, 119, 1, 1, "gifts"],
+   [124, 1165, "Mini Gifts Distributors Ltd.", "Susan", "Nelson", "4155551450", "5677 Strong St.", nil, "97562", "San Rafael", "CA", "USA", 210500.0, 124, 1, 1, "gifts"]]
 
 == Testing
 

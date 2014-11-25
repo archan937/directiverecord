@@ -10,7 +10,7 @@ host, port, user, password, database = config.values_at "host", "port", "usernam
     "mysqldump",
    ("-h #{host}" unless host.to_s.strip.empty?), ("-P #{port}" unless port.to_s.strip.empty?),
     "-u #{user}", ("-p#{password}" unless password.to_s.strip.empty?),
-    "--compact --no-create-db --add-drop-table --skip-lock-tables",
+    "--no-create-db --add-drop-table",
     "#{database} > ./db/directive_record.sql"
   ].compact.join(" ")
 }`

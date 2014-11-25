@@ -13,35 +13,35 @@ module Unit
           assert_equal(
             strip(
               %Q{
-                SELECT `a`.id, `a`.title
-                FROM articles `a`
+                SELECT `o`.id, `o`.city
+                FROM offices `o`
               }
             ),
-            Article.to_qry("id, title")
+            Office.to_qry("id, city")
           )
 
           assert_equal(
             strip(
               %Q{
                 SELECT *
-                FROM articles `a`
-                WHERE (`a`.id > 0) AND (`a`.title LIKE 'Behold%')
+                FROM employees `e`
+                WHERE (`e`.office_id = 1) AND (`e`.first_name LIKE '%y')
               }
             ),
-            Article.where("id > 0").where("title LIKE ?", "Behold%").to_qry
+            Employee.where("office_id = 1").where("first_name LIKE ?", "%y").to_qry
           )
 
           assert_equal(
             strip(
               %Q{
-                SELECT `a`.id, `a`.title, `author`.name, GROUP_CONCAT(`tags`.name)
-                FROM articles `a`
-                LEFT JOIN users `author` ON `author`.id = `a`.author_id
-                LEFT JOIN articles_tags `tags_bridge_table` ON `tags_bridge_table`.article_id = `a`.id
+                SELECT `c`.id, `c`.name, COUNT(`orders`.id) AS order_count, GROUP_CONCAT(DISTINCT `tags`.name) AS tags
+                FROM customers `c`
+                LEFT JOIN orders `orders` ON `orders`.customer_id = `c`.id
+                LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
                 LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
               }
             ),
-            Article.to_qry("id, title, author.name, GROUP_CONCAT(tags.name)")
+            Customer.to_qry("id, name, COUNT(orders.id) AS order_count, GROUP_CONCAT(DISTINCT tags.name) AS tags")
           )
         end
       end

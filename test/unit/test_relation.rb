@@ -14,24 +14,24 @@ module Unit
       describe "#qry_options" do
         it "returns the expected options" do
           assert_equal({
-            :select => "title",
+            :select => "city",
             :where => ["id = 1"]
-          }, Article.where(:id => 1).qry_options("title"))
+          }, Office.where(:id => 1).qry_options("city"))
 
           assert_equal({
-            :where => ["tags.name LIKE '%ruby%'"]
-          }, Article.where("tags.name LIKE ?", "%ruby%").qry_options)
+            :where => ["employees.first_name LIKE '%y'"]
+          }, Office.where("employees.first_name LIKE ?", "%y").qry_options)
 
           assert_equal({
-            :select => ["id, title"],
-            :where => ["title LIKE '%behold%'"],
+            :select => ["id, city"],
+            :where => ["employees.first_name LIKE '%y'"],
             :group_by => ["id"],
-            :order_by => ["title"]
-          }, Article.select("id, title").where("title LIKE ?", "%behold%").group("id").order("title").qry_options)
+            :order_by => ["city"]
+          }, Office.select("id, city").where("employees.first_name LIKE ?", "%y").group("id").order("city").qry_options)
 
           assert_equal({
-            :where => ["author.foo.title LIKE '%ruby%'"]
-          }, Article.where("author.foo.title LIKE ?", "%ruby%").qry_options)
+            :where => ["sales_rep_employee.office.city LIKE '%on'"]
+          }, Customer.where("sales_rep_employee.office.city LIKE ?", "%on").qry_options)
         end
       end
     end

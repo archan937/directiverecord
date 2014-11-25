@@ -13,35 +13,11 @@ module Unit
           assert_equal(
             strip(
               %Q{
-                SELECT a.id, a.title
-                FROM articles a
+                SELECT o.id, o.city
+                FROM offices o
               }
             ),
-            Article.to_qry("id, title")
-          )
-
-          assert_equal(
-            strip(
-              %Q{
-                SELECT *
-                FROM articles a
-                WHERE (a.id > 0) AND (a.title LIKE 'Behold%')
-              }
-            ),
-            Article.where("id > 0").where("title LIKE ?", "Behold%").to_qry
-          )
-
-          assert_equal(
-            strip(
-              %Q{
-                SELECT a.id, a.title, author.name, GROUP_CONCAT(tags.name)
-                FROM articles a
-                LEFT JOIN users author ON author.id = a.author_id
-                LEFT JOIN articles_tags tags_bridge_table ON tags_bridge_table.article_id = a.id
-                LEFT JOIN tags tags ON tags.id = tags_bridge_table.tag_id
-              }
-            ),
-            Article.to_qry("id, title, author.name, GROUP_CONCAT(tags.name)")
+            Office.to_qry("id, city")
           )
         end
       end

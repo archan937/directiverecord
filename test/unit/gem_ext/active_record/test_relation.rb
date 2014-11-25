@@ -7,7 +7,7 @@ module Unit
 
         describe ::ActiveRecord::Relation do
           before do
-            @relation = Article.where(:id => 1)
+            @relation = Office.where(:id => 1)
           end
 
           describe "#qry_options" do
@@ -21,17 +21,17 @@ module Unit
 
           describe "#to_qry" do
             it "delegates to its klass with qry_options" do
-              @relation.expects(:qry_options).with("foo.bar").returns(:foo => "bar")
-              Article.expects(:to_qry).with(:foo => "bar").returns("<query>")
-              assert_equal "<query>", @relation.to_qry("foo.bar")
+              @relation.expects(:qry_options).with("city").returns(:select => "city", :where => ["id = 1"])
+              Office.expects(:to_qry).with(:select => "city", :where => ["id = 1"]).returns("SELECT city FROM offices WHERE id = 1")
+              assert_equal "SELECT city FROM offices WHERE id = 1", @relation.to_qry("city")
             end
           end
 
           describe "#qry" do
             it "delegates to its klass with qry_options" do
-              @relation.expects(:qry_options).with("foo.bar").returns(:foo => "bar")
-              Article.expects(:qry).with(:foo => "bar").returns(%w(foo bar))
-              assert_equal %w(foo bar), @relation.qry("foo.bar")
+              @relation.expects(:qry_options).with("city").returns(:select => "city", :where => ["id = 1"])
+              Office.expects(:qry).with(:select => "city", :where => ["id = 1"]).returns(%w(NYC))
+              assert_equal %w(NYC), @relation.qry("city")
             end
           end
         end
