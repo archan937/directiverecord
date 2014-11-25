@@ -90,7 +90,7 @@ module DirectiveRecord
         options[:aliases] = {}
 
         options[:select] = options[:select].inject([]) do |array, path|
-          sql, sql_alias = path, nil
+          sql, sql_alias = ((path == ".*") ? "#{base_alias}.*" : path), nil
 
           if aggregate_method = (options[:aggregates] || {})[path]
             sql = select_aggregate_sql(aggregate_method, path)
@@ -233,9 +233,9 @@ module DirectiveRecord
       def prepend_base_alias(sql, aliases = {})
         columns = base.columns_hash.keys
         sql = sql.join ", " if sql.is_a?(Array)
-        sql.gsub(/("[^"]*"|'[^']*'|[a-zA-Z_#{aggregate_delimiter}]+(\.[a-zA-Z_]+)*)/) do
+        sql.gsub(/("[^"]*"|'[^']*'|[a-zA-Z_#{aggregate_delimiter}]+(\.[a-zA-Z_\*]+)*)/) do
           columns.include?($1) ? "#{base_alias}.#{$1}" : begin
-            if (string = $1).match /^([a-zA-Z_\.]+)\.([a-zA-Z_]+)$/
+            if (string = $1).match /^([a-zA-Z_\.]+)\.([a-zA-Z_\*]+)$/
               path, column = $1, $2
               "#{quote_alias path.gsub(".", path_delimiter)}.#{column}"
             else

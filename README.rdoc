@@ -38,16 +38,25 @@ You can run the following commands in your console for instance:
   [2] pry(main)> Customer.qry("id", "name", "COUNT(orders.id) AS order_count", "GROUP_CONCAT(DISTINCT tags.name) AS tags")
   => [[103, "Atelier graphique", 330, "gifts,posters"]]
   [3] pry(main)> puts Customer.where("tags.name LIKE ?", "%gifts%").to_qry
-  SELECT *
+  SELECT `c`.*
   FROM customers `c`
   LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
   LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
   WHERE (`tags`.name LIKE '%gifts%')
   => nil
   [4] pry(main)> Customer.where("tags.name LIKE ?", "%gifts%").qry
-  => [[112, 1166, "Signal Gift Stores", "Jean", "King", "7025551838", "8489 Strong St.", nil, "83030", "Las Vegas", "NV", "USA", 71800.0, 112, 1, 1, "gifts"],
-   [119, 1370, "La Rochelle Gifts", "Janine ", "Labrune", "40.67.8555", "67, rue des Cinquante Otages", nil, "44000", "Nantes", nil, "France", 118200.0, 119, 1, 1, "gifts"],
-   [124, 1165, "Mini Gifts Distributors Ltd.", "Susan", "Nelson", "4155551450", "5677 Strong St.", nil, "97562", "San Rafael", "CA", "USA", 210500.0, 124, 1, 1, "gifts"]]
+  => [[112, 1166, "Signal Gift Stores", "Jean", "King", "7025551838", "8489 Strong St.", nil, "83030", "Las Vegas", "NV", "USA", 71800.0],
+   [119, 1370, "La Rochelle Gifts", "Janine ", "Labrune", "40.67.8555", "67, rue des Cinquante Otages", nil, "44000", "Nantes", nil, "France", 118200.0],
+   [124, 1165, "Mini Gifts Distributors Ltd.", "Susan", "Nelson", "4155551450", "5677 Strong St.", nil, "97562", "San Rafael", "CA", "USA", 210500.0]]
+  [5] pry(main)> puts Customer.where("tags.name LIKE ?", "%gifts%").group("tags.id").to_qry("tags.*")
+  SELECT `tags`.*
+  FROM customers `c`
+  LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
+  LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
+  WHERE (`tags`.name LIKE '%gifts%')
+  GROUP BY `tags`.id
+  ORDER BY `tags`.id ASC
+  => nil
 
 == Testing
 

@@ -23,7 +23,7 @@ module Unit
           assert_equal(
             strip(
               %Q{
-                SELECT *
+                SELECT `e`.*
                 FROM employees `e`
                 WHERE (`e`.office_id = 1) AND (`e`.first_name LIKE '%y')
               }

@@ -19,6 +19,7 @@ module Unit
           }, Office.where(:id => 1).qry_options("city"))
 
           assert_equal({
+            :select => ".*",
             :where => ["employees.first_name LIKE '%y'"]
           }, Office.where("employees.first_name LIKE ?", "%y").qry_options)
 
@@ -30,6 +31,7 @@ module Unit
           }, Office.select("id, city").where("employees.first_name LIKE ?", "%y").group("id").order("city").qry_options)
 
           assert_equal({
+            :select => ".*",
             :where => ["sales_rep_employee.office.city LIKE '%on'"]
           }, Customer.where("sales_rep_employee.office.city LIKE ?", "%on").qry_options)
         end
