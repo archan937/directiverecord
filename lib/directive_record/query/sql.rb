@@ -139,12 +139,14 @@ module DirectiveRecord
 
       def normalize_order_by!(options)
         options[:order_by] ||= (options[:group_by] || []).collect do |path|
-          direction = (path.to_s == "date") ? "DESC" : "ASC"
-          "#{path} #{direction}"
+          direction = "DESC" if path.to_s == "date"
+          "#{path} #{direction}".strip
         end
 
         to_array!(options, :order_by).collect! do |x|
-          path, direction = x.split " "
+          segments = x.split " "
+          direction = segments.pop if %w(asc desc).include?(segments[-1].downcase)
+          path = segments.join " "
           scale = options[:scales][path]
           select = begin
             if aggregate_method = (options[:aggregates] || {})[path]
@@ -153,7 +155,7 @@ module DirectiveRecord
               path
             end
           end
-          "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}"
+          "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}".strip
         end
       end
 
