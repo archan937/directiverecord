@@ -14,7 +14,7 @@ module Unit
       describe "#qry_options" do
         it "returns the expected options" do
           assert_equal({
-            :select => "city",
+            :select => ["city"],
             :where => ["id = 1"]
           }, Office.where(:id => 1).qry_options("city"))
 

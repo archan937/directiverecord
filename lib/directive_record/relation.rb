@@ -7,16 +7,19 @@ module DirectiveRecord
       @active_relation = active_relation
     end
 
-    def qry_options(select = nil)
-      select ||= select_values.collect{|x| sql_aliases_to_paths(x)}
-      {
-        :select => (select.blank? ? ".*" : select),
-        :where => where_values.collect{|x| sql_aliases_to_paths(x)},
-        :group_by => group_values.collect{|x| sql_aliases_to_paths(x)},
-        :order_by => order_values.collect{|x| sql_aliases_to_paths(x)},
-        :limit => limit_value,
-        :offset => offset_value
-      }.reject!{|k, v| v.blank?}
+    def qry_options(*args)
+      options = args.extract_options!
+      select = args.any? ? args : select_values.collect{|x| sql_aliases_to_paths(x)}
+      options.merge(
+        {
+          :select => (select.blank? ? ".*" : select),
+          :where => where_values.collect{|x| sql_aliases_to_paths(x)},
+          :group_by => group_values.collect{|x| sql_aliases_to_paths(x)},
+          :order_by => order_values.collect{|x| sql_aliases_to_paths(x)},
+          :limit => limit_value,
+          :offset => offset_value
+        }.reject!{|k, v| v.blank?}
+      )
     end
 
   private
