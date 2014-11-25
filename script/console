@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-require "bundler"
-Bundler.require :default, :development
-
-require_relative "../app/models"
-
-puts "Loading DirectiveRecord development environment (#{DirectiveRecord::VERSION})"
-Pry.start
