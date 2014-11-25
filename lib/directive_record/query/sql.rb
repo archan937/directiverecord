@@ -113,7 +113,9 @@ module DirectiveRecord
       def normalize_where!(options)
         regexp = /^\S+/
 
-        where, having = (to_array!(options, :where) || []).partition{|statement| !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s)}
+        where, having = (to_array!(options, :where) || []).partition do |statement|
+          !column_for(statement.strip.match(regexp).to_s).nil?
+        end
 
         unless (attrs = base.scope_attributes).blank?
           sql = base.send(:sanitize_sql_for_conditions, attrs, "").gsub(/``.`(\w+)`/) { $1 }
@@ -121,7 +123,7 @@ module DirectiveRecord
         end
 
         options[:where], options[:having] = where, having.collect do |statement|
-          statement.strip.gsub(regexp){|path| options[:aggregated][path]}
+          statement.strip.gsub(regexp){|path| options[:aggregated][path] || path}
         end
 
         [:where, :having].each do |key|
