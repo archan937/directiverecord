@@ -24,18 +24,10 @@ module Unit
           end
         end
 
-        describe "#select_aggregate_sql" do
+        describe "#aggregate_delimiter" do
           it "raises an NotImplementedError" do
             assert_raises NotImplementedError do
-              @directive_query.send :select_aggregate_sql, :sum, "foo.bar"
-            end
-          end
-        end
-
-        describe "#select_aggregate_sql_alias" do
-          it "raises an NotImplementedError" do
-            assert_raises NotImplementedError do
-              @directive_query.send :select_aggregate_sql_alias, :sum, "foo.bar"
+              @directive_query.send :aggregate_delimiter
             end
           end
         end
