@@ -1,6 +1,6 @@
 ## DirectiveRecord
 
-A thin layer on top of ActiveRecord for using paths within queries without thinking about association joins
+A layer on top of ActiveRecord for using paths within queries without thinking about association joins
 
 ### Installation
 
@@ -20,6 +20,8 @@ https://github.com/archan937/directiverecord-console
 
 and follow the README instructions. It is provided with a sample database and a Pry console in which you can play with `DirectiveRecord`.
 
+The README is also provided with several [straightforward examples](https://github.com/archan937/directiverecord-console#using-the-console).
+
 ### Testing
 
 Run the following command for testing:
@@ -28,7 +30,7 @@ Run the following command for testing:
 
 You can also run a single test file:
 
-    $ ruby test/unit/test_directive_record.rb
+    $ ruby test/unit/query/test_mysql.rb
 
 ### TODO
 

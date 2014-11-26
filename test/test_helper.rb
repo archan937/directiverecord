@@ -6,6 +6,7 @@ require "mocha/setup"
 require "bundler"
 Bundler.require :default, :development
 
+require_relative "test_helper/nulldb"
 require_relative "application/boot"
 
 def project_file(path)

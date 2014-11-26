@@ -4,8 +4,8 @@ require File.expand_path("../lib/directive_record/version", __FILE__)
 Gem::Specification.new do |gem|
   gem.author        = "Paul Engel"
   gem.email         = "pm_engel@icloud.com"
-  gem.summary       = %q{A thin layer on top of ActiveRecord for using paths within queries without thinking about association joins}
-  gem.description   = %q{A thin layer on top of ActiveRecord for using paths within queries without thinking about association joins}
+  gem.summary       = %q{A layer on top of ActiveRecord for using paths within queries without thinking about association joins}
+  gem.description   = %q{A layer on top of ActiveRecord for using paths within queries without thinking about association joins}
   gem.homepage      = "https://github.com/archan937/directiverecord"
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency "rake"
   gem.add_development_dependency "yard"
+  gem.add_development_dependency "pry"
   gem.add_development_dependency "activerecord-nulldb-adapter"
   gem.add_development_dependency "simplecov"
   gem.add_development_dependency "minitest"
