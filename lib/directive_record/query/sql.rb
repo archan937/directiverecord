@@ -226,8 +226,8 @@ module DirectiveRecord
       end
 
       def extract_paths(options)
-        options.inject([]) do |paths, (key, value)|
-          if [:select, :where, :group_by, :having].include?(key)
+        [:select, :where, :group_by, :having, :order_by].inject([]) do |paths, key|
+          if value = options[key]
             value = value.join " " if value.is_a?(Array)
             paths.concat value.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ").scan(/[a-zA-Z_]+\.[a-zA-Z_\.]+/).collect{|x| x.split(".")[0..-2].join "."}
           else
@@ -237,7 +237,7 @@ module DirectiveRecord
       end
 
       def prepend_base_alias!(options)
-        [:select, :where, :having, :group_by, :order_by].each do |key|
+        [:select, :where, :group_by, :having, :order_by].each do |key|
           if value = options[key]
             options[key] = prepend_base_alias value, options[:aliases]
           end

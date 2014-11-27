@@ -198,6 +198,18 @@ module Unit
           assert_equal(
             strip(
               %Q{
+                SELECT `e`.id
+                FROM employees `e`
+                LEFT JOIN offices `office` ON `office`.id = `e`.office_id
+                ORDER BY `office`.name, `e`.last_name, `e`.first_name
+              }
+            ),
+            Employee.to_qry("id", :order_by => "office.name, last_name, first_name")
+          )
+
+          assert_equal(
+            strip(
+              %Q{
                 SELECT `o`.*
                 FROM offices `o`
                 WHERE (`o`.country = 'USA')
