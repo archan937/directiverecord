@@ -1,0 +1,8 @@
+---
+  adapter:  mysql2
+  host:     localhost
+  database: directive_record_test
+  username: root
+  password:
+  pool: 5
+  timeout: 5000
