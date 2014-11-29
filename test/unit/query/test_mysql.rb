@@ -201,10 +201,23 @@ module Unit
                 SELECT `e`.id
                 FROM employees `e`
                 LEFT JOIN offices `office` ON `office`.id = `e`.office_id
-                ORDER BY `office`.name, `e`.last_name, `e`.first_name
+                ORDER BY `office`.city, `e`.last_name, `e`.first_name
               }
             ),
-            Employee.to_qry("id", :order_by => "office.name, last_name, first_name")
+            Employee.to_qry("id", :order_by => "office.city, last_name, first_name")
+          )
+
+          assert_equal(
+            strip(
+              %Q{
+                SELECT `e`.id, `office`.city
+                FROM employees `e`
+                LEFT JOIN offices `office` ON `office`.id = `e`.office_id
+                WHERE (`e`.id IN (1143, 1076, 1165, 1002, 1056, 1166, 0))
+                ORDER BY `office`.city, `e`.last_name, `e`.first_name
+              }
+            ),
+            Employee.to_qry("id", "office.city", :where => "office_id = 1", :order_by => "office.city, last_name, first_name")
           )
 
           assert_equal(

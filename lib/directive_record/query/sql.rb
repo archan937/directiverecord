@@ -10,6 +10,8 @@ module DirectiveRecord
         options = extract_options(args)
         validate_options! options
 
+        optimize_query! options
+
         prepare_options! options
         normalize_options! options
 
@@ -63,6 +65,16 @@ module DirectiveRecord
 
       def validate_options!(options)
         options.assert_valid_keys :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases
+      end
+
+      def optimize_query!(options)
+        select = [options[:select]].flatten
+        if options[:where] && (select != %w(id)) && select.any?{|x| x.match(/^\w+(\.\w+)+$/)}
+          ids = base.connection.select_values(to_sql(options.merge(:select => "id"))).uniq + [0]
+          options[:where] = ["id IN (#{ids.join(", ")})"]
+          options.delete :limit
+          options.delete :offset
+        end
       end
 
       def prepare_options!(options); end
