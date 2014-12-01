@@ -1,5 +1,5 @@
 = DirectiveRecord CHANGELOG
 
-== Version 0.1.0 (November xx, 2014)
+== Version 0.1.0 (December 1, 2014)
 
 * Initial release
