@@ -217,7 +217,7 @@ module Unit
                 ORDER BY `office`.city, `e`.last_name, `e`.first_name
               }
             ),
-            Employee.to_qry("id", "office.city", :where => "office_id = 1", :order_by => "office.city, last_name, first_name")
+            Employee.to_qry("id", "office.city", :where => "office_id = 1", :order_by => "office.city, last_name, first_name", :optimize => true)
           )
 
           assert_equal(

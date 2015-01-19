@@ -64,12 +64,12 @@ module DirectiveRecord
       end
 
       def validate_options!(options)
-        options.assert_valid_keys :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases
+        options.assert_valid_keys :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :optimize
       end
 
       def optimize_query!(options)
         select = [options[:select]].flatten
-        if options[:where] && (select != %w(id)) && select.any?{|x| x.match(/^\w+(\.\w+)+$/)}
+        if options[:optimize] && (select != %w(id)) && select.any?{|x| x.match(/^\w+(\.\w+)+$/)}
           ids = base.connection.select_values(to_sql(options.merge(:select => "id"))).uniq + [0]
           options[:where] = ["id IN (#{ids.join(", ")})"]
           options.delete :limit
