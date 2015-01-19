@@ -20,12 +20,6 @@ module Unit
           end
         end
 
-        describe "when MonetDB" do
-          it "returns the DirectiveRecord::Query::MonetDB class" do
-            assert_equal DirectiveRecord::Query::MonetDB, DirectiveRecord::Query.send(:class_for, "monetdb::connection")
-          end
-        end
-
         describe "when else" do
           it "raises a NotImplementedError" do
             assert_raises NotImplementedError do
