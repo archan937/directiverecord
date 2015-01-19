@@ -1,5 +1,10 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.1 (January 19, 2015)
+
+* Optimizing query when passing :optimize => true and having paths within the select statement
+* Dropped MonetDB support
+
 == Version 0.1.0 (December 1, 2014)
 
 * Initial release
