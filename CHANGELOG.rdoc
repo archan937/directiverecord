@@ -1,5 +1,13 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.2 (January 21, 2015)
+
+* Downgraded ActiveRecord gem dependency to >= 3.2.13
+* Being able to specify the connection to query with
+* Ensuring option values to be arrays
+* Not making the path delimiter obligated (which implies denormalized data)
+* Added BigQuery support (denormalized data)! ^^
+
 == Version 0.1.1 (January 19, 2015)
 
 * Optimizing query when passing :optimize => true and having paths within the select statement
