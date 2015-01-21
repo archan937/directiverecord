@@ -9,6 +9,10 @@ module ActiveRecord
       extract_connection(args).select_rows to_qry(*args)
     end
 
+    def self.to_trend_qry(q1, q2, join_column_count, options)
+      DirectiveRecord::Query.new(self).to_trend_sql(q1, q2, join_column_count, options)
+    end
+
   private
 
     def self.extract_connection(args)

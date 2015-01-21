@@ -25,6 +25,23 @@ module DirectiveRecord
         compose_sql options
       end
 
+      def to_trend_sql(q1, q2, join_column_count, options)
+        i      = join_column_count + 1
+        select = "q1.*, q2.c#{i}, (((q1.c#{i} - q2.c#{i}) / ABS(q2.c#{i})) * 100) AS trend"
+        on     = (1..join_column_count).to_a.collect{|x| "q1.c#{x} = q2.c#{x}"}.join(" AND ")
+        order  = "\nORDER BY #{options[:order]}" if options[:order]
+        limit  = "\nLIMIT #{options[:limit]}" if options[:limit]
+        offset = "\nOFFSET #{options[:offset]}" if options[:offset]
+<<-SQL
+SELECT #{select}
+FROM
+(\n#{q1}\n) q1
+INNER JOIN
+(\n#{q2}\n) q2
+ON #{on}#{order}#{limit}#{offset}
+SQL
+      end
+
     private
 
       def path_delimiter; end
