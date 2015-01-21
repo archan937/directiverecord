@@ -17,10 +17,8 @@ module Unit
         end
 
         describe "#path_delimiter" do
-          it "raises an NotImplementedError" do
-            assert_raises NotImplementedError do
-              @directive_query.send :path_delimiter
-            end
+          it "returns nil" do
+            assert_nil @directive_query.send(:path_delimiter)
           end
         end
 

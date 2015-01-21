@@ -22,11 +22,14 @@ module DirectiveRecord
 
       def finalize_options!(options)
         return unless options[:numerize_aliases]
+
+        aliases = options[:aliases] || {}
+
         [:group_by, :having, :order_by].each do |key|
-          if sql = options[key]
-            options[:aliases].each do |pattern, replacement|
-              sql.gsub! pattern, replacement
-            end
+          if value = options[key]
+            value = value.join ", "
+            aliases.each{|pattern, replacement| value.gsub! pattern, replacement}
+            options[key] = value
           end
         end
       end

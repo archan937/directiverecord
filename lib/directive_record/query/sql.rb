@@ -7,9 +7,10 @@ module DirectiveRecord
       end
 
       def to_sql(*args)
-        options = extract_options(args)
+        options = to_options(args)
         validate_options! options
 
+        check_path_delimiter! options
         optimize_query! options
 
         prepare_options! options
@@ -20,14 +21,13 @@ module DirectiveRecord
         prepend_base_alias! options
         finalize_options! options
 
+        flatten_options! options
         compose_sql options
       end
 
     private
 
-      def path_delimiter
-        raise NotImplementedError
-      end
+      def path_delimiter; end
 
       def aggregate_delimiter
         raise NotImplementedError
@@ -57,9 +57,16 @@ module DirectiveRecord
         sql_alias
       end
 
-      def extract_options(args)
+      def to_options(args)
         options = args.extract_options!.deep_dup
         options.reverse_merge! :select => (args.empty? ? "*" : args)
+
+        [:select, :where, :group_by, :order_by].each do |key|
+          if value = options[key]
+            options[key] = [value].flatten
+          end
+        end
+
         options
       end
 
@@ -68,7 +75,7 @@ module DirectiveRecord
       end
 
       def optimize_query!(options)
-        select = [options[:select]].flatten
+        select = options[:select]
         if options[:optimize] && (select != %w(id)) && select.any?{|x| x.match(/^\w+(\.\w+)+$/)}
           ids = base.connection.select_values(to_sql(options.merge(:select => "id"))).uniq + [0]
           options[:where] = ["id IN (#{ids.join(", ")})"]
@@ -77,10 +84,26 @@ module DirectiveRecord
         end
       end
 
+      def check_path_delimiter!(options)
+        unless path_delimiter
+          normalize_group_by! options
+          [:select, :where, :having, :group_by, :order_by].each do |key|
+            if value = options[key]
+              value.collect! do |val|
+                base.reflections.keys.inject(val) do |v, association|
+                  v.gsub(/\b#{association}\.([a-z_\.]+)/) { "#{association}_#{$1.gsub(".", "_")}" }
+                end
+              end
+            end
+          end
+        end
+      end
+
       def prepare_options!(options); end
 
       def normalize_options!(options)
         normalize_select!(options)
+        normalize_from!(options)
         normalize_where!(options)
         normalize_group_by!(options)
         normalize_order_by!(options)
@@ -88,10 +111,9 @@ module DirectiveRecord
       end
 
       def normalize_select!(options)
-        select = to_array! options, :select
-        select.uniq!
+        options[:select].uniq!
 
-        options[:scales] = select.inject({}) do |hash, sql|
+        options[:scales] = options[:select].inject({}) do |hash, sql|
           if scale = column_for(sql).try(:scale)
             hash[sql] = scale
           end
@@ -117,15 +139,21 @@ module DirectiveRecord
             sql_alias = options[:aliases][prepend_base_alias(sql_alias || sql)] = "c#{array.size + 1}"
           end
 
+          options[:aliases][sql] = sql_alias if sql_alias
+
           array << [sql, sql_alias].compact.join(" AS ")
           array
         end
       end
 
+      def normalize_from!(options)
+        options[:from] = "#{base.table_name} #{base_alias}"
+      end
+
       def normalize_where!(options)
         regexp = /^\S+/
 
-        where, having = (to_array!(options, :where) || []).partition do |statement|
+        where, having = (options[:where] || []).partition do |statement|
           !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
           statement.downcase.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
                             .scan(/([a-zA-Z_\.]+)?\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s)/)
@@ -144,23 +172,27 @@ module DirectiveRecord
         end
 
         [:where, :having].each do |key|
-          value = options[key]
-          options[key] = (value.collect{|x| "(#{x})"}.join(" AND ") unless value.empty?)
+          if options[key].empty?
+            options.delete key
+          end
         end
       end
 
       def normalize_group_by!(options)
-        group_by = to_array! options, :group_by
-        group_by.clear.push(group_by_all_sql) if group_by == [:all]
+        if (group_by = options[:group_by]) == [:all]
+          group_by.replace [group_by_all_sql]
+        end
       end
 
       def normalize_order_by!(options)
         options[:order_by] ||= (options[:group_by] || []).collect do |path|
           direction = "DESC" if path.to_s == "date"
           "#{path} #{direction}".strip
-        end
+        end unless options[:select] == "COUNT(*)"
 
-        to_array!(options, :order_by).collect! do |x|
+        return unless options[:order_by]
+
+        options[:order_by].collect! do |x|
           segments = x.split " "
           direction = segments.pop if %w(asc desc).include?(segments[-1].downcase)
           path = segments.join " "
@@ -179,12 +211,6 @@ module DirectiveRecord
         end
 
         options[:order_by].compact!
-      end
-
-      def to_array!(options, key)
-        if value = options[key]
-          options[key] = [value].flatten
-        end
       end
 
       def column_for(path)
@@ -251,14 +277,15 @@ module DirectiveRecord
       def prepend_base_alias!(options)
         [:select, :where, :group_by, :having, :order_by].each do |key|
           if value = options[key]
-            options[key] = prepend_base_alias value, options[:aliases]
+            value.collect! do |sql|
+              prepend_base_alias sql, options[:aliases]
+            end
           end
         end
       end
 
       def prepend_base_alias(sql, aliases = {})
         columns = base.columns_hash.keys
-        sql = sql.join ", " if sql.is_a?(Array)
         sql.gsub(/("[^"]*"|'[^']*'|`[^`]*`|[a-zA-Z_#{aggregate_delimiter}]+(\.[a-zA-Z_\*]+)*)/) do
           columns.include?($1) ? "#{base_alias}.#{$1}" : begin
             if (string = $1).match /^([a-zA-Z_\.]+)\.([a-zA-Z_\*]+)$/
@@ -273,8 +300,22 @@ module DirectiveRecord
 
       def finalize_options!(options); end
 
+      def flatten_options!(options)
+        [:select, :group_by, :order_by].each do |key|
+          if value = options[key]
+            options[key] = value.join(", ") if value.is_a?(Array)
+          end
+        end
+
+        [:where, :having].each do |key|
+          if value = options[key]
+            options[key] = value.collect{|x| "(#{x})"}.join(" AND ") if value.is_a?(Array)
+          end
+        end
+      end
+
       def compose_sql(options)
-        sql = ["SELECT #{options[:select]}", "FROM #{base.table_name} #{base_alias}", options[:joins]].compact
+        sql = ["SELECT #{options[:select]}", "FROM #{options[:from]}", options[:joins]].compact
 
         [:where, :group_by, :having, :order_by, :limit, :offset].each do |key|
           unless (value = options[key]).blank?
