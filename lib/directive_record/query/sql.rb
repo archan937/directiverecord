@@ -71,7 +71,7 @@ module DirectiveRecord
       end
 
       def validate_options!(options)
-        options.assert_valid_keys :connection, :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :optimize
+        options.assert_valid_keys :connection, :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :period, :optimize
       end
 
       def optimize_query!(options)
