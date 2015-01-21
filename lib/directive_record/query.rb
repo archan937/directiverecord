@@ -4,8 +4,8 @@ require "directive_record/query/mysql"
 module DirectiveRecord
   module Query
 
-    def self.new(klass)
-      class_for(klass.connection.class.name.downcase).new(klass)
+    def self.new(klass, connection = nil)
+      class_for((connection || klass.connection).class.name.downcase).new(klass)
     end
 
   private

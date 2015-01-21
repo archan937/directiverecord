@@ -7,7 +7,7 @@ module Unit
       describe ".new" do
         it "returns the appropriate query instance" do
           instance = mock
-          instance.expects(:new).with(Office).returns("SELECT * FROM offices")
+          instance.expects(:new).with(Office, nil).returns("SELECT * FROM offices")
           DirectiveRecord::Query.expects(:class_for).with("activerecord::connectionadapters::mysql2adapter").returns(instance)
           assert_equal "SELECT * FROM offices", DirectiveRecord::Query.new(Office)
         end
