@@ -55,7 +55,7 @@ module Unit
                 LIMIT 5
               }
             ),
-            Customer.to_qry("id, name, COUNT(orders.id) AS order_count, GROUP_CONCAT(DISTINCT tags.name) AS tags", :group_by => "id", :order_by => "COUNT(DISTINCT tags.id) DESC", :limit => 5)
+            Customer.to_qry("id", "name", "COUNT(orders.id) AS order_count", "GROUP_CONCAT(DISTINCT tags.name) AS tags", :group_by => "id", :order_by => "COUNT(DISTINCT tags.id) DESC", :limit => 5)
           )
 
           assert_equal(
@@ -97,7 +97,7 @@ module Unit
                 ORDER BY `c`.id
               }
             ),
-            Customer.to_qry("id, name, COUNT(orders.id) AS order_count", :where => "order_count > 3", :group_by => "id")
+            Customer.to_qry("id", "name", "COUNT(orders.id) AS order_count", :where => "order_count > 3", :group_by => "id")
           )
 
           $default_office_scope = {:id => [1, 3, 6]}
@@ -193,6 +193,17 @@ module Unit
               }
             ),
             Employee.where(["first_name LIKE ?", "%y"]).to_qry
+          )
+
+          assert_equal(
+            strip(
+              %Q{
+                SELECT `e`.*
+                FROM employees `e`
+                WHERE (LOWER(`e`.first_name) LIKE '%y')
+              }
+            ),
+            Employee.where(["LOWER(first_name) LIKE ?", "%y"]).to_qry
           )
 
           assert_equal(

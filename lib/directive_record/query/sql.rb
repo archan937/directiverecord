@@ -155,6 +155,11 @@ SQL
             sql = sql.gsub(/ AS .*$/, "")
             sql_alias = options[:aliases][prepend_base_alias(sql_alias || sql)] = "c#{array.size + 1}"
           end
+          unless sql_alias
+            sql.match(/^(.*) AS (.*)$/)
+            sql = $1 if $1
+            sql_alias = $2
+          end
 
           options[:aliases][sql] = sql_alias if sql_alias
 
@@ -168,14 +173,16 @@ SQL
       end
 
       def normalize_where!(options)
-        regexp = /^\S+/
+        regexp, aliases = /^\S+/, options[:aliases].invert
 
         where, having = (options[:where] || []).partition do |statement|
-          !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
-          statement.downcase.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
-                            .scan(/([a-zA-Z_\.]+)?\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s)/)
-                            .all? do |(path, operator)|
-            path && column_for(path)
+          statement.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
+                   .split(/\b(and|or)\b/i).reject{|sql| %w(and or).include? sql.downcase}
+                   .collect{|sql| sql = sql.strip; (sql[0] == "(" && sql[-1] == ")" ? sql[1..-1] : sql)}
+                   .all? do |sql|
+            sql.match /(.*)\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s|$)/i
+            path = $1.strip rescue binding.pry
+            !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
           end
         end
 
