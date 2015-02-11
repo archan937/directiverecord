@@ -33,12 +33,18 @@ module DirectiveRecord
         aliases = options[:aliases] || {}
 
         options[:select].collect! do |string|
-          expression, select_alias = string.match(/^(.*) AS (.*)$/).try(:captures)
-          if select_alias
-            aliases[expression] = select_alias
-            options[:group_by].to_s.include?(expression) || !expression.match(/^\w+(\.\w+)*$/) ? string : "MAX(#{expression}) AS #{select_alias}"
+          if string.match(/^(.*) AS (.*)$/)
+            select_expression, select_alias = $1, $2
+            aliases[select_expression] = select_alias
+          end
+
+          select_expression ||= string
+          group_by_expression = select_alias || string
+
+          if options[:group_by].include?(group_by_expression) || !select_expression.match(/^\w+(\.\w+)*$/)
+            string
           else
-            string.match(/^\w+(\.\w+)*$/) ? "MAX(#{string})" : string
+            ["MAX(#{select_expression})", select_alias].compact.join(" AS ")
           end
         end if options[:group_by]
 

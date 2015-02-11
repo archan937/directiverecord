@@ -18,7 +18,7 @@ module Unit
         it "generates the expected SQL" do
           assert_equal(
             %Q{
-              SELECT MAX(id),
+              SELECT id,
                      SUM(order_details_quantity_ordered) AS sum__order_details_quantity_ordered,
                      SUM(order_details_price_each) AS sum__order_details_price_each,
                      SUM(order_details_quantity_ordered * order_details_price_each) AS price
@@ -43,7 +43,7 @@ module Unit
 
           assert_equal(
             %Q{
-              SELECT MAX(id), SUM(order_details_quantity_ordered * order_details_price_each)
+              SELECT id, SUM(order_details_quantity_ordered * order_details_price_each)
               FROM
                 [my_stats.orders_20150115],
                 [my_stats.orders_20150116],
@@ -57,6 +57,30 @@ module Unit
             }.strip.gsub(/\s+/, " "),
             Order.to_qry(
               "id", "SUM(order_details.quantity_ordered * order_details.price_each)",
+              :connection => BigQuery.connection,
+              :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
+              :group_by => "id",
+              :order_by => "id",
+              :period => "order_date"
+            ).strip.gsub(/\s+/, " ")
+          )
+
+          assert_equal(
+            %Q{
+              SELECT id, MAX(customer_id), SUM(order_details_quantity_ordered * order_details_price_each)
+              FROM
+                [my_stats.orders_20150115],
+                [my_stats.orders_20150116],
+                [my_stats.orders_20150117],
+                [my_stats.orders_20150118],
+                [my_stats.orders_20150119],
+                [my_stats.orders_20150120],
+                [my_stats.orders_20150121]
+              GROUP BY id
+              ORDER BY id
+            }.strip.gsub(/\s+/, " "),
+            Order.to_qry(
+              "id", "customer_id", "SUM(order_details.quantity_ordered * order_details.price_each)",
               :connection => BigQuery.connection,
               :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
               :group_by => "id",
