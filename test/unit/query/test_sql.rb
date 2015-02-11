@@ -29,14 +29,6 @@ module Unit
             end
           end
         end
-
-        describe "#group_by_all_sql" do
-          it "raises an NotImplementedError" do
-            assert_raises NotImplementedError do
-              @directive_query.send :group_by_all_sql
-            end
-          end
-        end
       end
 
     end

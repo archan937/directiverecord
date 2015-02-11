@@ -50,10 +50,6 @@ SQL
         raise NotImplementedError
       end
 
-      def group_by_all_sql
-        raise NotImplementedError
-      end
-
       def select_aggregate_sql(method, path)
         "#{method.to_s.upcase}(#{path})"
       end
@@ -103,7 +99,6 @@ SQL
 
       def check_path_delimiter!(options)
         unless path_delimiter
-          normalize_group_by! options
           [:select, :where, :having, :group_by, :order_by].each do |key|
             if value = options[key]
               value.collect! do |val|
@@ -122,7 +117,6 @@ SQL
         normalize_select!(options)
         normalize_from!(options)
         normalize_where!(options)
-        normalize_group_by!(options)
         normalize_order_by!(options)
         options.reject!{|k, v| v.blank?}
       end
@@ -202,12 +196,6 @@ SQL
         end
       end
 
-      def normalize_group_by!(options)
-        if (group_by = options[:group_by]) == [:all]
-          group_by.replace [group_by_all_sql]
-        end
-      end
-
       def normalize_order_by!(options)
         options[:order_by] ||= (options[:group_by] || []).collect do |path|
           direction = "DESC" if path.to_s == "date"
@@ -220,18 +208,17 @@ SQL
           segments = x.split " "
           direction = segments.pop if %w(asc desc).include?(segments[-1].downcase)
           path = segments.join " "
+          scale = options[:scales][path]
 
-          if path != group_by_all_sql
-            scale = options[:scales][path]
-            select = begin
-              if aggregate_method = (options[:aggregates] || {})[path]
-                select_aggregate_sql(aggregate_method, path)
-              else
-                path
-              end
+          select = begin
+            if aggregate_method = (options[:aggregates] || {})[path]
+              select_aggregate_sql(aggregate_method, path)
+            else
+              path
             end
-            "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}".strip
           end
+
+          "#{scale ? "ROUND(#{select}, #{scale})" : select} #{direction.upcase if direction}".strip
         end
 
         options[:order_by].compact!

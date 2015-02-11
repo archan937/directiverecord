@@ -153,10 +153,9 @@ module Unit
               %Q{
                 SELECT ROUND(SUM(`od`.price_each), 2) AS `sum:price_each`
                 FROM order_details `od`
-                GROUP BY NULL
               }
             ),
-            OrderDetail.to_qry("price_each", :aggregates => {"price_each" => :sum}, :group_by => :all)
+            OrderDetail.to_qry("price_each", :aggregates => {"price_each" => :sum})
           )
 
           assert_equal(

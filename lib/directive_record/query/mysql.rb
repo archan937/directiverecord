@@ -12,10 +12,6 @@ module DirectiveRecord
         ":"
       end
 
-      def group_by_all_sql
-        "NULL"
-      end
-
       def quote_alias(sql_alias)
         "`#{sql_alias}`"
       end

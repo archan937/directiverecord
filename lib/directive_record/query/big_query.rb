@@ -8,10 +8,6 @@ module DirectiveRecord
         "__"
       end
 
-      def group_by_all_sql
-        "all_rows"
-      end
-
       def normalize_from!(options)
         period = options[:period]
 
