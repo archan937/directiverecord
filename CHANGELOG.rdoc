@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.6 (February 11, 2015)
+
+* Improved BigQuery select statement correction concerning the group by statement
+
 == Version 0.1.5 (February 11, 2015)
 
 * Dropped :group_by => :all option
