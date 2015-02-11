@@ -1,5 +1,10 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.5 (February 11, 2015)
+
+* Dropped :group_by => :all option
+* Locked Arel gem dependency to “< 6.0.0”
+
 == Version 0.1.4 (January 22, 2015)
 
 * Improved partitioning conditions to WHERE or HAVING which fixes conditions with non-aggregate functions (e.g. LOWER)

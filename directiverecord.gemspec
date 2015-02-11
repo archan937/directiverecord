@@ -14,6 +14,7 @@ Gem::Specification.new do |gem|
   gem.name          = "directiverecord"
   gem.require_paths = ["lib"]
   gem.version       = DirectiveRecord::VERSION
+  gem.licenses      = ["MIT"]
 
   gem.add_dependency "activerecord", ">= 3.2.13"
   gem.add_dependency "arel", "< 6.0.0"
