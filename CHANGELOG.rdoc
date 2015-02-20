@@ -1,8 +1,12 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.7 (February 20, 2015)
+
+* Improved BigQuery FROM statement (using TABLE_DATE_RANGE)
+
 == Version 0.1.6 (February 11, 2015)
 
-* Improved BigQuery select statement correction concerning the group by statement
+* Improved BigQuery SELECT statement correction concerning the group by statement
 
 == Version 0.1.5 (February 11, 2015)
 
