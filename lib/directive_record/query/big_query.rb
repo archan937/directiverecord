@@ -19,10 +19,7 @@ module DirectiveRecord
           end
           if begin_date
             dataset = ::BigQuery.connection.instance_variable_get(:@dataset) # TODO: fix this
-            options[:from] = (Date.parse(begin_date)..Date.parse(end_date)).collect do |date|
-              "[#{dataset}.#{base.table_name}_#{date.strftime("%Y%m%d")}]"
-            end
-            options[:from] = "\n  #{options[:from].join(",\n  ")}"
+            options[:from] = "\n  (TABLE_DATE_RANGE(#{dataset}.#{base.table_name}_, TIMESTAMP('#{begin_date}'), TIMESTAMP('#{end_date}')))"
           end
         end
       end
