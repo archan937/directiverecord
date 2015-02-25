@@ -23,7 +23,7 @@ module Unit
                      SUM(order_details_price_each) AS sum__order_details_price_each,
                      SUM(order_details_quantity_ordered * order_details_price_each) AS price
               FROM
-                (TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-21'), TIMESTAMP('2015-01-21')))
+                TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-21'), TIMESTAMP('2015-01-21'))
               GROUP BY id
               ORDER BY price DESC
             }.strip.gsub(/\s+/, " "),
@@ -45,7 +45,7 @@ module Unit
             %Q{
               SELECT id, SUM(order_details_quantity_ordered * order_details_price_each)
               FROM
-                (TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-15'), TIMESTAMP('2015-01-21')))
+                TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-15'), TIMESTAMP('2015-01-21'))
               GROUP BY id
               ORDER BY id
             }.strip.gsub(/\s+/, " "),
@@ -63,7 +63,7 @@ module Unit
             %Q{
               SELECT id, MAX(customer_id), SUM(order_details_quantity_ordered * order_details_price_each)
               FROM
-                (TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-15'), TIMESTAMP('2015-01-21')))
+                TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-15'), TIMESTAMP('2015-01-21'))
               GROUP BY id
               ORDER BY id
             }.strip.gsub(/\s+/, " "),

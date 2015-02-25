@@ -19,7 +19,7 @@ module DirectiveRecord
           end
           if begin_date
             dataset = ::BigQuery.connection.instance_variable_get(:@dataset) # TODO: fix this
-            options[:from] = "\n  (TABLE_DATE_RANGE(#{dataset}.#{base.table_name}_, TIMESTAMP('#{begin_date}'), TIMESTAMP('#{end_date}')))"
+            options[:from] = "\n  TABLE_DATE_RANGE(#{dataset}.#{base.table_name}_, TIMESTAMP('#{begin_date}'), TIMESTAMP('#{end_date}'))"
           end
         end
       end
@@ -38,7 +38,7 @@ module DirectiveRecord
           select_expression ||= string
           group_by_expression = select_alias || string
 
-          if options[:group_by].include?(group_by_expression) || !select_expression.match(/^\w+(\.\w+)*$/)
+          if options[:group_by].include?(group_by_expression) || options[:group_by].include?(select_expression) || !select_expression.match(/^\w+(\.\w+)*$/)
             string
           else
             ["MAX(#{select_expression})", select_alias].compact.join(" AS ")
