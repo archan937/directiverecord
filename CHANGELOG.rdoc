@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.8 (February 25, 2015)
+
+* Corrected auto-applying MAX(..) aggregate function within BigQuery SELECT statements
+
 == Version 0.1.7 (February 20, 2015)
 
 * Improved BigQuery FROM statement (using TABLE_DATE_RANGE)
