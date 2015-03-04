@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.9 (March 4, 2015)
+
+* Overridden ActiveRecord::Relation#size to hook in DirectiveRecord query mechanism
+
 == Version 0.1.8 (February 25, 2015)
 
 * Corrected auto-applying MAX(..) aggregate function within BigQuery SELECT statements
