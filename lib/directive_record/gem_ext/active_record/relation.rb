@@ -13,5 +13,11 @@ module ActiveRecord
       klass.qry qry_options(*args)
     end
 
+    alias :original_size :size
+
+    def size
+      loaded? ? original_size : qry("COUNT(*)")[0][0]
+    end
+
   end
 end
