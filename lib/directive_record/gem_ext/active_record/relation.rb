@@ -13,10 +13,14 @@ module ActiveRecord
       klass.qry qry_options(*args)
     end
 
-    alias :original_size :size
+    alias :original_count :count
 
-    def size
-      loaded? ? original_size : qry("COUNT(*)")[0][0]
+    def count(column_name = nil, options = {})
+      if !loaded? && (column_name == :all) && (options == {})
+        qry("COUNT(*)")[0][0]
+      else
+        original_count column_name, options
+      end
     end
 
   end

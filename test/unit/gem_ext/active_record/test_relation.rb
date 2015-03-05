@@ -35,19 +35,32 @@ module Unit
             end
           end
 
-          describe "#size" do
-            describe "when loaded" do
-              it "invokes the original size method" do
-                @relation.expects(:loaded?).returns(true)
-                @relation.expects(:original_size)
-                @relation.size
+          describe "#count" do
+            describe "when only passing :all" do
+              describe "when loaded" do
+                it "invokes the original count method" do
+                  @relation.expects(:loaded?).returns(true)
+                  @relation.expects(:original_count)
+                  @relation.count(:all)
+                end
+              end
+              describe "when not loaded" do
+                it "uses qry to count the records" do
+                  @relation.expects(:loaded?).returns(false)
+                  @relation.expects(:qry).with("COUNT(*)").returns([[1982]])
+                  assert_equal 1982, @relation.count(:all)
+                end
               end
             end
-            describe "when not loaded" do
-              it "uses qry to count the records" do
+            describe "when otherwise" do
+              it "invokes the original count method" do
                 @relation.expects(:loaded?).returns(false)
-                @relation.expects(:qry).with("COUNT(*)").returns([[1982]])
-                assert_equal 1982, @relation.size
+                @relation.expects(:original_count)
+                @relation.count(:foo)
+
+                @relation.expects(:loaded?).returns(false)
+                @relation.expects(:original_count)
+                @relation.count(:all, {:foo => :bar})
               end
             end
           end
