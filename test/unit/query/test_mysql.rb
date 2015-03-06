@@ -17,7 +17,17 @@ module Unit
                 FROM offices `o`
               }
             ),
-            Office.to_qry("id, city")
+            Office.to_qry("id", "city")
+          )
+
+          assert_equal(
+            strip(
+              %Q{
+                SELECT `o`.id, `o`.city, (SELECT o1.id FROM offices o1)
+                FROM offices `o`
+              }
+            ),
+            Office.to_qry("id", "city", "(SELECT o1.id FROM offices o1)")
           )
 
           assert_equal(

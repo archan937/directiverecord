@@ -296,6 +296,7 @@ SQL
       end
 
       def prepend_base_alias(sql, aliases = {})
+        return sql if sql.include?("SELECT")
         columns = base.columns_hash.keys
         sql.gsub(/("[^"]*"|'[^']*'|`[^`]*`|[a-zA-Z_#{aggregate_delimiter}]+(\.[a-zA-Z_\*]+)*)/) do
           columns.include?($1) ? "#{base_alias}.#{$1}" : begin
