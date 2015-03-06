@@ -47,7 +47,7 @@ module Unit
               describe "when not loaded" do
                 it "uses qry to count the records" do
                   @relation.expects(:loaded?).returns(false)
-                  @relation.expects(:qry).with("COUNT(*)").returns([[1982]])
+                  @relation.expects(:qry).with("COUNT(DISTINCT id)").returns([[1982]])
                   assert_equal 1982, @relation.count(:all)
                 end
               end

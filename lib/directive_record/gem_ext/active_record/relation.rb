@@ -17,7 +17,7 @@ module ActiveRecord
 
     def count(column_name = nil, options = {})
       if !loaded? && (column_name == :all) && (options == {})
-        qry("COUNT(*)")[0][0]
+        qry("COUNT(DISTINCT id)")[0][0]
       else
         original_count column_name, options
       end
