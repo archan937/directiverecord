@@ -197,10 +197,6 @@ SQL
       end
 
       def normalize_order_by!(options)
-        options[:order_by] ||= (options[:group_by] || []).collect do |path|
-          direction = "DESC" if path.to_s == "date"
-          "#{path} #{direction}".strip
-        end unless options[:select] == "COUNT(*)"
 
         return unless options[:order_by]
 
