@@ -90,7 +90,6 @@ module Unit
                 LEFT JOIN tags `tags` ON `tags`.id = `tags_bridge_table`.tag_id
                 WHERE (`tags`.name LIKE '%gifts%')
                 GROUP BY `tags`.id
-                ORDER BY `tags`.id
               }
             ),
             Customer.where("tags.name LIKE ?", "%gifts%").group("tags.id").to_qry("tags.*")
@@ -104,7 +103,6 @@ module Unit
                 LEFT JOIN orders `orders` ON `orders`.customer_id = `c`.id
                 GROUP BY `c`.id
                 HAVING (order_count > 3)
-                ORDER BY `c`.id
               }
             ),
             Customer.to_qry("id", "name", "COUNT(orders.id) AS order_count", :where => "order_count > 3", :group_by => "id")
@@ -174,7 +172,6 @@ module Unit
                 SELECT ROUND(SUM(`od`.price_each), 2) AS `sum:price_each`
                 FROM order_details `od`
                 GROUP BY `od`.order_id
-                ORDER BY `od`.order_id
               }
             ),
             OrderDetail.to_qry("price_each", :aggregates => {"price_each" => :sum}, :group_by => "order_id")
@@ -187,7 +184,6 @@ module Unit
                 FROM order_details `od`
                 LEFT JOIN orders `order` ON `order`.id = `od`.order_id
                 GROUP BY c1
-                ORDER BY c1
               }
             ),
             OrderDetail.to_qry("order.id", "price_each", :aggregates => {"price_each" => :sum}, :group_by => "order.id", :numerize_aliases => true)
@@ -249,6 +245,18 @@ module Unit
               }
             ),
             Office.usa.to_qry
+          )
+
+          assert_equal(
+            strip(
+              %Q{
+                SELECT `o`.*, YEAR(created_at) AS year
+                FROM offices `o`
+                WHERE (`o`.country = 'USA')
+                GROUP BY year
+              }
+            ),
+            Office.usa.to_qry(:group_by => "YEAR(created_at) AS year")
           )
         end
       end

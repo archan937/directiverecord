@@ -76,6 +76,22 @@ module Unit
               :period => "order_date"
             ).strip.gsub(/\s+/, " ")
           )
+
+          assert_equal(
+            %Q{
+              SELECT COUNT(id), YEAR(order_date) AS year
+              FROM
+                TABLE_DATE_RANGE(my_stats.orders_, TIMESTAMP('2015-01-15'), TIMESTAMP('2015-01-21'))
+              GROUP BY year
+            }.strip.gsub(/\s+/, " "),
+            Order.to_qry(
+              "COUNT(id)",
+              :connection => BigQuery.connection,
+              :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
+              :group_by => "YEAR(order_date) AS year",
+              :period => "order_date"
+            ).strip.gsub(/\s+/, " ")
+          )
         end
       end
 

@@ -117,6 +117,7 @@ SQL
         normalize_select!(options)
         normalize_from!(options)
         normalize_where!(options)
+        normalize_group_by!(options)
         normalize_order_by!(options)
         options.reject!{|k, v| v.blank?}
       end
@@ -196,8 +197,18 @@ SQL
         end
       end
 
-      def normalize_order_by!(options)
+      def normalize_group_by!(options)
+        options[:group_by].collect! do |x|
+          if x.match(/ AS (\w+)$/)
+            options[:select] << x unless options[:select].include?(x)
+            $1
+          else
+            x
+          end
+        end if options[:group_by]
+      end
 
+      def normalize_order_by!(options)
         return unless options[:order_by]
 
         options[:order_by].collect! do |x|
