@@ -1,5 +1,10 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.12 (March 8, 2015)
+
+* Being able to specify calculated :group_by option
+* Not adding ORDER BY statement automatically
+
 == Version 0.1.11 (March 6, 2015)
 
 * Counting ‘DISTINCT id’ instead of ‘*’ in ActiveRecord::Relation#count(:all) override
