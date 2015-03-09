@@ -10,11 +10,12 @@ module DirectiveRecord
         options = to_options(args)
         validate_options! options
 
+        original_options = options.deep_dup.reject!{|k, v| v.nil?}
         check_path_delimiter! options
         optimize_query! options
 
         prepare_options! options
-        normalize_options! options
+        normalize_options! options, original_options
 
         parse_joins! options
 
@@ -84,7 +85,7 @@ SQL
       end
 
       def validate_options!(options)
-        options.assert_valid_keys :connection, :select, :where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :period, :optimize
+        options.assert_valid_keys :connection, :select, :subselect, :where, :ignore_where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :period, :optimize
       end
 
       def optimize_query!(options)
@@ -113,8 +114,9 @@ SQL
 
       def prepare_options!(options); end
 
-      def normalize_options!(options)
+      def normalize_options!(options, original_options)
         normalize_select!(options)
+        normalize_subselect!(options, original_options)
         normalize_from!(options)
         normalize_where!(options)
         normalize_group_by!(options)
@@ -156,11 +158,34 @@ SQL
             sql_alias = $2
           end
 
+          sql.gsub!(/sub:(\w+)\./) { "#{quote_alias($1)}." }
           options[:aliases][sql] = sql_alias if sql_alias
 
           array << [sql, sql_alias].compact.join(" AS ")
           array
         end
+      end
+
+      def normalize_subselect!(options, original_options)
+        options[:subselect] = options[:subselect].collect do |name, (klass, opts)|
+          qry_options = original_options.deep_dup.reject!{|k, v| [:subselect, :numerize_aliases, :limit, :offset, :group_by, :order_by].include?(k)}
+
+          opts.each do |key, value|
+            value = [value].flatten
+            if key == :select
+              qry_options[key] = value
+            elsif key.to_s.match(/ignore_(\w+)/)
+              qry_options[$1.to_sym].reject!{|x| value.any?{|y| x.include?(y)}}
+            else
+              qry_options[key].concat value
+            end
+          end
+
+          base_alias = quote_alias(klass.table_name.split("_").collect{|x| x[0]}.join(""))
+          query = klass.to_qry(qry_options).gsub("\n", " ").gsub(/#{base_alias}[\s\.]/, "")
+
+          " , (#{query}) #{quote_alias(name)}"
+        end if options[:subselect]
       end
 
       def normalize_from!(options)
@@ -285,7 +310,7 @@ SQL
         [:select, :where, :group_by, :having, :order_by].inject([]) do |paths, key|
           if value = options[key]
             value = value.join " " if value.is_a?(Array)
-            paths.concat value.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ").scan(/[a-zA-Z_]+\.[a-zA-Z_\.]+/).collect{|x| x.split(".")[0..-2].join "."}
+            paths.concat value.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ").gsub(/sub:[a-zA-Z_]+\.[a-zA-Z_\.]+/, " ").scan(/[a-zA-Z_]+\.[a-zA-Z_\.]+/).collect{|x| x.split(".")[0..-2].join "."}
           else
             paths
           end
