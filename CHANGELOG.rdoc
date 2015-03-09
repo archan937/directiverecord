@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.14 (March 9, 2015)
+
+* Corrected normalize_select!
+
 == Version 0.1.13 (March 9, 2015)
 
 * Separating SELECT statement in lines when containing more than three columns
