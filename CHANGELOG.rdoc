@@ -1,5 +1,10 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.13 (March 9, 2015)
+
+* Separating SELECT statement in lines when containing more than three columns
+* Supporting subselects
+
 == Version 0.1.12 (March 8, 2015)
 
 * Being able to specify calculated :group_by option
