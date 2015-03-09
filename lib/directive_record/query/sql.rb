@@ -158,7 +158,7 @@ SQL
             sql_alias = $2
           end
 
-          sql.gsub!(/sub:(\w+)\./) { "#{quote_alias($1)}." }
+          sql.gsub!(/sub:(\w+)\./) { "#{quote_alias($1)}." } if sql.is_a?(String)
           options[:aliases][sql] = sql_alias if sql_alias
 
           array << [sql, sql_alias].compact.join(" AS ")
