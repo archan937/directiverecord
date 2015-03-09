@@ -320,7 +320,13 @@ SQL
       def finalize_options!(options); end
 
       def flatten_options!(options)
-        [:select, :group_by, :order_by].each do |key|
+        options[:select] = if options[:select].size <= 3
+          " " + options[:select].join(", ")
+        else
+          "\n  " + options[:select].join(",\n  ")
+        end
+
+        [:group_by, :order_by].each do |key|
           if value = options[key]
             options[key] = value.join(", ") if value.is_a?(Array)
           end
@@ -334,7 +340,7 @@ SQL
       end
 
       def compose_sql(options)
-        sql = ["SELECT #{options[:select]}", "FROM #{options[:from]}", options[:joins]].compact
+        sql = ["SELECT#{options[:select]}", "FROM #{options[:from]}", options[:joins], options[:subselect]].compact
 
         [:where, :group_by, :having, :order_by, :limit, :offset].each do |key|
           unless (value = options[key]).blank?

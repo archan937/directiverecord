@@ -13,5 +13,7 @@ def project_file(path)
 end
 
 def strip(sql)
-  sql.strip.gsub(/^\s+/m, "")
+  sql.match(/^\n?(\s+)/)
+  size = $1.to_s.size
+  sql.gsub(/\n\s{#{size}}/, "\n").strip
 end

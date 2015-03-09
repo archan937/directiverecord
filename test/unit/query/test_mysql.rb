@@ -55,7 +55,11 @@ module Unit
           assert_equal(
             strip(
               %Q{
-                SELECT `c`.id, `c`.name, COUNT(`orders`.id) AS order_count, GROUP_CONCAT(DISTINCT `tags`.name) AS tags
+                SELECT
+                  `c`.id,
+                  `c`.name,
+                  COUNT(`orders`.id) AS order_count,
+                  GROUP_CONCAT(DISTINCT `tags`.name) AS tags
                 FROM customers `c`
                 LEFT JOIN orders `orders` ON `orders`.customer_id = `c`.id
                 LEFT JOIN customers_tags `tags_bridge_table` ON `tags_bridge_table`.customer_id = `c`.id
