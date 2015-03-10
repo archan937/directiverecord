@@ -196,12 +196,13 @@ SQL
         regexp, aliases = /^\S+/, options[:aliases].invert
 
         where, having = (options[:where] || []).partition do |statement|
+          !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
           statement.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
                    .split(/\b(and|or)\b/i).reject{|sql| %w(and or).include? sql.downcase}
                    .collect{|sql| sql = sql.strip; (sql[0] == "(" && sql[-1] == ")" ? sql[1..-1] : sql)}
                    .all? do |sql|
             sql.match /(.*)\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s|$)/i
-            path = $1.strip rescue binding.pry
+            path = $1.strip
             !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
           end
         end
