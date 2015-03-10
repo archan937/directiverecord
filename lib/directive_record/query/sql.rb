@@ -167,24 +167,41 @@ SQL
       end
 
       def normalize_subselect!(options, original_options)
-        options[:subselect] = options[:subselect].collect do |name, (klass, opts)|
-          qry_options = original_options.deep_dup.reject!{|k, v| [:subselect, :numerize_aliases, :limit, :offset, :group_by, :order_by].include?(k)}
+        options[:subselect] = options[:subselect].sort_by{|name, (klass, opts)| opts[:join] ? 0 : 1}.collect do |name, (klass, opts)|
+          qry_options = original_options.deep_dup.reject!{|k, v| [:subselect, :numerize_aliases, :limit, :offset, :order_by].include?(k)}
 
           opts.each do |key, value|
             value = [value].flatten
             if key == :select
               qry_options[key] = value
-            elsif key.to_s.match(/ignore_(\w+)/)
-              qry_options[$1.to_sym].reject!{|x| value.any?{|y| x.include?(y)}}
+            elsif key == :join
+              # do nothing
+            elsif key.to_s.match(/include_(\w+)/)
+              (qry_options[$1.to_sym] || []).select!{|x| value.any?{|y| x.include?(y)}}
+            elsif key.to_s.match(/exclude_(\w+)/)
+              (qry_options[$1.to_sym] || []).reject!{|x| value.any?{|y| x.include?(y)}}
             else
               qry_options[key].concat value
             end
           end
 
           base_alias = quote_alias(klass.table_name.split("_").collect{|x| x[0]}.join(""))
-          query = klass.to_qry(qry_options).gsub("\n", " ").gsub(/#{base_alias}[\s\.]/, "")
+          query_alias = quote_alias(name)
 
-          " , (#{query}) #{quote_alias(name)}"
+          if opts[:join] && !qry_options[:group_by].blank?
+            joins = qry_options[:group_by].collect do |path|
+              qry_options[:select].unshift(column = path.gsub(/\.\w+$/, "_id").strip)
+              "#{query_alias}.#{column} = #{base_alias}.#{column}"
+            end
+            prefix = "LEFT JOIN\n   "
+            postfix = " ON #{joins.join(" AND ")}"
+          else
+            prefix = " , "
+          end
+
+          query = klass.to_qry(qry_options).gsub(/\n\s*/, " ").gsub(/#{base_alias}[\s\.]/, "")
+          "#{prefix}(#{query}) #{query_alias}#{postfix}"
+
         end if options[:subselect]
       end
 
