@@ -1,5 +1,11 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.15 (March 10, 2015)
+
+* Being able to include / exclude subselect options
+* Being able to join with a subselect
+* Also auto-applying aggregate method for paths within conditions
+
 == Version 0.1.14 (March 9, 2015)
 
 * Corrected normalize_select!
