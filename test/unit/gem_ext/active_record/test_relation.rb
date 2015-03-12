@@ -45,10 +45,26 @@ module Unit
                 end
               end
               describe "when not loaded" do
-                it "uses qry to count the records" do
-                  @relation.expects(:loaded?).returns(false)
-                  @relation.expects(:qry).with("COUNT(DISTINCT id)").returns([[1982]])
-                  assert_equal 1982, @relation.count(:all)
+                describe "when not having potential path query options" do
+                  it "invokes the original count method" do
+                    @relation.expects(:loaded?).returns(false)
+                    @relation.expects(:qry_options).returns({:where => ["foo = 12"]})
+                    @relation.expects(:original_count)
+                    @relation.count(:all)
+
+                    @relation.expects(:loaded?).returns(false)
+                    @relation.expects(:qry_options).returns({:where => ["foo.bar = 12"]})
+                    @relation.expects(:original_count)
+                    @relation.count(:all)
+                  end
+                end
+                describe "when having potential path query options" do
+                  it "uses #qry to count the records" do
+                    @relation.expects(:loaded?).returns(false)
+                    @relation.expects(:qry_options).returns({:where => ["employees.foo = 12"]})
+                    @relation.expects(:qry).with("COUNT(DISTINCT id)").returns([[1982]])
+                    assert_equal 1982, @relation.count(:all)
+                  end
                 end
               end
             end
