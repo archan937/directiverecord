@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.16 (March 12, 2015)
+
+* Made ActiveRecord::Relation#count(:all) override more strict: only overrule behavior when having detected a possible path in the query options
+
 == Version 0.1.15 (March 10, 2015)
 
 * Being able to include / exclude subselect options
