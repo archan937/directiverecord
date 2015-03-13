@@ -190,8 +190,11 @@ SQL
 
           if opts[:join] && !qry_options[:group_by].blank?
             joins = qry_options[:group_by].collect do |path|
-              qry_options[:select].unshift(column = path.gsub(/\.\w+$/, "_id").strip)
-              "#{query_alias}.#{column} = #{base_alias}.#{column}"
+              column = path.gsub(/\.\w+$/, "_id").strip
+              column.match(/(.*) AS (\w+)$/)
+              select_sql, select_alias = $1, $2
+              qry_options[:select].unshift(column)
+              "#{query_alias}.#{select_alias || column} = #{select_sql || "#{base_alias}.#{column}"}"
             end
             prefix = "LEFT JOIN\n   "
             postfix = " ON #{joins.join(" AND ")}"
