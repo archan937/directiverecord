@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.17 (March 13, 2015)
+
+* Corrected normalize_subselect!
+
 == Version 0.1.16 (March 12, 2015)
 
 * Made ActiveRecord::Relation#count(:all) override more strict: only overrule behavior when having detected a possible path in the query options
