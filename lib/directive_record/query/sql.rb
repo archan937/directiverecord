@@ -10,7 +10,9 @@ module DirectiveRecord
         options = to_options(args)
         validate_options! options
 
-        original_options = options.deep_dup.reject!{|k, v| v.nil?}
+        original_options = options.deep_dup
+        original_options.reject!{|k, v| v.nil?}
+
         check_path_delimiter! options
         optimize_query! options
 
@@ -168,13 +170,14 @@ SQL
 
       def normalize_subselect!(options, original_options)
         options[:subselect] = options[:subselect].sort_by{|name, (klass, opts)| opts[:join] ? 0 : 1}.collect do |name, (klass, opts)|
-          qry_options = original_options.deep_dup.reject!{|k, v| [:subselect, :numerize_aliases, :limit, :offset, :order_by].include?(k)}
+          qry_options = original_options.deep_dup
+          qry_options.reject!{|k, v| [:subselect, :numerize_aliases, :limit, :offset, :order_by, :join, :flatten].include?(k)}
 
           opts.each do |key, value|
             value = [value].flatten
             if key == :select
               qry_options[key] = value
-            elsif key == :join
+            elsif [:join, :flatten].include?(key)
               # do nothing
             elsif key.to_s.match(/include_(\w+)/)
               (qry_options[$1.to_sym] || []).select!{|x| value.any?{|y| x.include?(y)}}
@@ -203,6 +206,22 @@ SQL
           end
 
           query = klass.to_qry(qry_options).gsub(/\n\s*/, " ").gsub(/#{base_alias}[\s\.]/, "")
+
+          if opts[:flatten]
+            qry_alias = quote_alias("_#{name}")
+
+            dup_options = qry_options.deep_dup
+            normalize_select!(dup_options)
+            prepend_base_alias!(dup_options)
+
+            select = dup_options[:select].collect do |sql|
+              sql_alias = sql.match(/ AS (.*?)$/).captures[0]
+              "SUM(#{qry_alias}.#{sql_alias}) AS #{sql_alias}"
+            end
+
+            query = "SELECT #{select.join(", ")} FROM (#{query}) #{qry_alias}"
+          end
+
           "#{prefix}(#{query}) #{query_alias}#{postfix}"
 
         end if options[:subselect]
