@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.19 (March 25, 2015)
+
+* Corrected normalize_group_by! when dealing with numerized calculations
+
 == Version 0.1.18 (March 18, 2015)
 
 * Being able to “flatten” a subselect (in order to aggregate a subselect within a subselect)
