@@ -264,9 +264,13 @@ SQL
 
       def normalize_group_by!(options)
         options[:group_by].collect! do |x|
-          if x.match(/ AS (\w+)$/)
-            options[:select] << x unless options[:select].include?(x)
-            $1
+          if x.match(/^(.*?) AS (\w+)$/)
+            if options[:select].any?{|x| x.include?("#{$1} AS ")}
+              $1
+            else
+              options[:select] << x
+              $2
+            end
           else
             x
           end
