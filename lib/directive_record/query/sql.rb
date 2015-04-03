@@ -242,7 +242,15 @@ SQL
                    .all? do |sql|
             sql.match /(.*?)\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s|$)/i
             path = $1.strip
-            !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
+
+            if (options[:aggregates] || {})[path]
+              normalize_select!(opts = options.deep_dup.merge(:select => [path]))
+              options[:select].concat(opts[:select]).uniq!
+              options[:aggregated].merge!(opts[:aggregated])
+              false
+            else
+              !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
+            end
           end
         end
 
