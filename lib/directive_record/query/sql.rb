@@ -150,14 +150,17 @@ SQL
             sql = "ROUND(#{sql}, #{scale})"
             sql_alias ||= quote_alias(path)
           end
-          if options[:numerize_aliases]
-            sql = sql.gsub(/ AS .*$/, "")
-            sql_alias = options[:aliases][prepend_base_alias(sql_alias || sql)] = "c#{array.size + 1}"
-          end
+
           unless sql_alias
             sql.match(/^(.*) AS (.*)$/)
             sql = $1 if $1
             sql_alias = $2
+          end
+
+          if options[:numerize_aliases]
+            c_alias = "c#{array.size + 1}"
+            options[:aggregated][sql_alias] = c_alias if !aggregate_method && sql_alias
+            sql_alias = options[:aliases][prepend_base_alias(sql_alias || sql)] = c_alias
           end
 
           sql.gsub!(/sub:(\w+)\./) { "#{quote_alias($1)}." } if sql.is_a?(String)
