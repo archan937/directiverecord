@@ -45,11 +45,13 @@ module DirectiveRecord
           end
         end if options[:group_by]
 
-        [:group_by, :having, :order_by].each do |key|
-          if value = options[key]
-            value = value.join ", "
-            aliases.each{|pattern, replacement| value.gsub! pattern, replacement}
-            options[key] = value
+        {", " => [:group_by, :order_by], " AND " => [:having]}.each do |delimiter, keys|
+          keys.each do |key|
+            if value = options[key]
+              value = value.join delimiter
+              aliases.each{|pattern, replacement| value.gsub! pattern, replacement}
+              options[key] = value
+            end
           end
         end
       end
