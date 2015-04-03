@@ -240,7 +240,7 @@ SQL
                    .split(/\b(and|or)\b/i).reject{|sql| %w(and or).include? sql.downcase}
                    .collect{|sql| sql = sql.strip; (sql[0] == "(" && sql[-1] == ")" ? sql[1..-1] : sql)}
                    .all? do |sql|
-            sql.match /(.*)\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s|$)/i
+            sql.match /(.*?)\s*(=|<=>|>=|>|<=|<|<>|!=|is|like|rlike|regexp|in|between|not|sounds|soundex)(\b|\s|$)/i
             path = $1.strip
             !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
           end
