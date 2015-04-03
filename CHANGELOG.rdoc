@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.20 (April 3, 2015)
+
+* Improved HAVING statement detection
+
 == Version 0.1.19 (March 25, 2015)
 
 * Corrected normalize_group_by! when dealing with numerized calculations
