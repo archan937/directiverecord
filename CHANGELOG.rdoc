@@ -1,5 +1,11 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.21 (April 3, 2015)
+
+* Storing original sql alias of a calculated column when numerizing aliases
+* Updating SELECT statement when dealing with auto-aggregated field as a HAVING statement
+* Corrected having multiple HAVING statements within a BigQuery query
+
 == Version 0.1.20 (April 3, 2015)
 
 * Improved HAVING statement detection
