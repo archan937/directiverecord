@@ -27,7 +27,14 @@ module DirectiveRecord
     def sql_aliases_to_paths(arg)
       visit_sql(arg).gsub(/(`([^`]+)`\.`([^`]+)`)/) do
         sql_alias, column = $2, $3
+
         path = sql_alias_to_path sql_alias
+        reflection = klass.reflections[sql_alias_to_association(sql_alias, klass).to_sym]
+
+        if reflection && (reflection.macro == :has_and_belongs_to_many) && (reflection.join_table == sql_alias) && (reflection.association_foreign_key == column)
+          column = "id"
+        end
+
         path.empty? ? column : "#{path}.#{column}"
       end
     end
