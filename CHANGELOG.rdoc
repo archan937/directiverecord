@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.22 (April 8, 2015)
+
+* Corrected deriving qry_options from habtm associations
+
 == Version 0.1.21 (April 3, 2015)
 
 * Storing original sql alias of a calculated column when numerizing aliases
