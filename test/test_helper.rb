@@ -6,6 +6,7 @@ require "mocha/setup"
 require "bundler"
 Bundler.require :default, :development
 
+require "directive_record/gem_ext/active_record/relation/count"
 require_relative "application/boot"
 
 def project_file(path)
