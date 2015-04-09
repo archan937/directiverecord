@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.23 (April 9, 2015)
+
+* Extracted ActiveRecord::Relation#count override to separate (non-auto-required) source file
+
 == Version 0.1.22 (April 8, 2015)
 
 * Corrected deriving qry_options from habtm associations
