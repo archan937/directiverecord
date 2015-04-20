@@ -87,7 +87,7 @@ SQL
       end
 
       def validate_options!(options)
-        options.assert_valid_keys :connection, :select, :subselect, :where, :ignore_where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :period, :optimize
+        options.assert_valid_keys :connection, :select, :subselect, :where, :ignore_where, :group_by, :order_by, :limit, :offset, :aggregates, :numerize_aliases, :dataset, :period, :optimize
       end
 
       def optimize_query!(options)

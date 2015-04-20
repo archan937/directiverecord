@@ -1,7 +1,7 @@
 require_relative "../../test_helper"
 
-module BigQuery
-  class Client
+module Google
+  class BigQuery
   end
 end
 
@@ -11,8 +11,8 @@ module Unit
 
       describe DirectiveRecord::Query::BigQuery do
         before do
-          (connection = BigQuery::Client.new).instance_variable_set(:@dataset, "my_stats")
-          BigQuery.expects(:connection).returns(connection).at_least_once
+          connection = Google::BigQuery.new
+          Google::BigQuery.expects(:connection).returns(connection).at_least_once
         end
 
         it "generates the expected SQL" do
@@ -29,10 +29,11 @@ module Unit
             }.strip.gsub(/\s+/, " "),
             Order.to_qry(
               "id", "order_details_quantity_ordered", "order_details_price_each", "SUM(order_details_quantity_ordered * order_details_price_each) AS price",
-              :connection => BigQuery.connection,
+              :connection => Google::BigQuery.connection,
               :where => "order_date = '2015-01-21'",
               :group_by => "id",
               :order_by => "price DESC",
+              :dataset => "my_stats",
               :period => "order_date",
               :aggregates => {
                 "order_details_quantity_ordered" => :sum,
@@ -51,10 +52,11 @@ module Unit
             }.strip.gsub(/\s+/, " "),
             Order.to_qry(
               "id", "SUM(order_details.quantity_ordered * order_details.price_each)",
-              :connection => BigQuery.connection,
+              :connection => Google::BigQuery.connection,
               :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
               :group_by => "id",
               :order_by => "id",
+              :dataset => "my_stats",
               :period => "order_date"
             ).strip.gsub(/\s+/, " ")
           )
@@ -69,10 +71,11 @@ module Unit
             }.strip.gsub(/\s+/, " "),
             Order.to_qry(
               "id", "customer_id", "SUM(order_details.quantity_ordered * order_details.price_each)",
-              :connection => BigQuery.connection,
+              :connection => Google::BigQuery.connection,
               :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
               :group_by => "id",
               :order_by => "id",
+              :dataset => "my_stats",
               :period => "order_date"
             ).strip.gsub(/\s+/, " ")
           )
@@ -86,9 +89,10 @@ module Unit
             }.strip.gsub(/\s+/, " "),
             Order.to_qry(
               "COUNT(id)",
-              :connection => BigQuery.connection,
+              :connection => Google::BigQuery.connection,
               :where => "order_date >= '2015-01-15' AND order_date <= '2015-01-21'",
               :group_by => "YEAR(order_date) AS year",
+              :dataset => "my_stats",
               :period => "order_date"
             ).strip.gsub(/\s+/, " ")
           )
