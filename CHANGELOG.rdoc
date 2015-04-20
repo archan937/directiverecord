@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.24 (April 20, 2015)
+
+* Properly getting BigQuery dataset from options
+
 == Version 0.1.23 (April 9, 2015)
 
 * Extracted ActiveRecord::Relation#count override to separate (non-auto-required) source file
