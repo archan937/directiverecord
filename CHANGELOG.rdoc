@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.25 (May 20, 2015)
+
+* Not assuming that an ActiveRelation where value contains a table alias to a corresponding association
+
 == Version 0.1.24 (April 20, 2015)
 
 * Properly getting BigQuery dataset from options
