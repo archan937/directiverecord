@@ -29,7 +29,8 @@ module DirectiveRecord
         sql_alias, column = $2, $3
 
         path = sql_alias_to_path sql_alias
-        reflection = klass.reflections[sql_alias_to_association(sql_alias, klass).to_sym]
+        association = sql_alias_to_association(sql_alias, klass)
+        reflection = klass.reflections[association.to_sym] if association
 
         if reflection && (reflection.macro == :has_and_belongs_to_many) && (reflection.join_table == sql_alias) && (reflection.association_foreign_key == column)
           column = "id"
