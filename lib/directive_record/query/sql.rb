@@ -93,7 +93,9 @@ SQL
       def optimize_query!(options)
         select = options[:select]
         if options[:optimize] && (select != %w(id)) && select.any?{|x| x.match(/^\w+(\.\w+)+$/)}
-          ids = base.connection.select_values(to_sql(options.merge(:select => "id"))).uniq + [0]
+          order_by = options[:order_by] || []
+          select = ["id"] + select.select{|x| x.match(/ AS (\w+)$/) && order_by.any?{|y| y.include?(quote_alias($1))}}
+          ids = base.connection.select_values(to_sql(options.merge(:select => select))).uniq + [0]
           options[:where] = ["id IN (#{ids.join(", ")})"]
           options.delete :limit
           options.delete :offset
