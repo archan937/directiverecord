@@ -45,7 +45,7 @@ ON #{on}#{order}#{limit}#{offset}
 SQL
       end
 
-    private
+    protected
 
       def path_delimiter; end
 
@@ -327,7 +327,7 @@ SQL
       def parse_joins!(options)
         return if (paths = extract_paths(options)).empty?
 
-        regexp = /INNER JOIN `([^`]+)`( `[^`]+`)? ON `[^`]+`.`([^`]+)` = `[^`]+`.`([^`]+)`/
+        regexp = /INNER JOIN `([^`]+)`( `[^`]+`)? ON `[^`]+`.`([^`]+)` = `[^`]+`.`([^`]+)`( AND .*)?/
 
         options[:joins] = paths.collect do |path|
           joins, associations = [], []
@@ -340,7 +340,7 @@ SQL
 
             table_joins.each_with_index do |table_join, index|
               concerns_bridge_table_join = concerns_bridge_table && index == 0
-              join_table, possible_alias, join_table_column, table_column = table_join
+              join_table, possible_alias, join_table_column, table_column, conditions = table_join
 
               table_as = (klass == base) ? base_alias : quote_alias(associations.join(path_delimiter))
               join_table_as = quote_alias((associations + [association]).join(path_delimiter))
@@ -353,7 +353,12 @@ SQL
                 end
               end
 
-              joins.push "LEFT JOIN #{join_table} #{join_table_as} ON #{join_table_as}.#{join_table_column} = #{table_as}.#{table_column}"
+              if conditions
+                sql = self.class.new(klass.reflect_on_association(association).klass)
+                conditions = sql.prepend_base_alias(conditions).gsub(sql.base_alias, join_table_as)
+              end
+
+              joins.push "LEFT JOIN #{join_table} #{join_table_as} ON #{join_table_as}.#{join_table_column} = #{table_as}.#{table_column}#{conditions}"
             end
 
             associations << association
