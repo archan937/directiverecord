@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.28 (August 13, 2015)
+
+* Corrected handling HAVING statements for “virtual columns” defined in the GROUP BY
+
 == Version 0.1.27 (July 9, 2015)
 
 * Including extra join conditions
