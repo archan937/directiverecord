@@ -122,8 +122,8 @@ SQL
         normalize_select!(options)
         normalize_subselect!(options, original_options)
         normalize_from!(options)
-        normalize_where!(options)
         normalize_group_by!(options)
+        normalize_where!(options)
         normalize_order_by!(options)
         options.reject!{|k, v| v.blank?}
       end
@@ -236,6 +236,28 @@ SQL
         options[:from] = "#{base.table_name} #{base_alias}"
       end
 
+      def normalize_group_by!(options)
+        normalize_select = false
+
+        options[:group_by].collect! do |x|
+          if x.match(/^(.*?) AS (\w+)$/)
+            if options[:select].any?{|x| x.include?("#{$1} AS ")}
+              $1
+            else
+              options[:select] << x
+              normalize_select = true
+              $2
+            end
+          else
+            x
+          end
+        end if options[:group_by]
+
+        if normalize_select
+          normalize_select!(options)
+        end
+      end
+
       def normalize_where!(options)
         regexp, aliases = /^\S+/, options[:aliases].invert
 
@@ -254,7 +276,10 @@ SQL
               options[:aggregated].merge!(opts[:aggregated])
               false
             else
-              !(aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i)
+              !(
+                (aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i) ||
+                aliases.include?(path)
+              )
             end
           end
         end
@@ -273,21 +298,6 @@ SQL
             options.delete key
           end
         end
-      end
-
-      def normalize_group_by!(options)
-        options[:group_by].collect! do |x|
-          if x.match(/^(.*?) AS (\w+)$/)
-            if options[:select].any?{|x| x.include?("#{$1} AS ")}
-              $1
-            else
-              options[:select] << x
-              $2
-            end
-          else
-            x
-          end
-        end if options[:group_by]
       end
 
       def normalize_order_by!(options)
