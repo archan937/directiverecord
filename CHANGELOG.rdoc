@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.29 (August 17, 2015)
+
+* Not normalizing select option again after having encountered new calculated columns in the GROUP BY statement, instead just register the alias
+
 == Version 0.1.28 (August 13, 2015)
 
 * Corrected handling HAVING statements for “virtual columns” defined in the GROUP BY
