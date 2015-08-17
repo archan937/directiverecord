@@ -237,25 +237,19 @@ SQL
       end
 
       def normalize_group_by!(options)
-        normalize_select = false
-
         options[:group_by].collect! do |x|
           if x.match(/^(.*?) AS (\w+)$/)
             if options[:select].any?{|x| x.include?("#{$1} AS ")}
               $1
             else
               options[:select] << x
-              normalize_select = true
+              options[:aliases][$1] = $2
               $2
             end
           else
             x
           end
         end if options[:group_by]
-
-        if normalize_select
-          normalize_select!(options)
-        end
       end
 
       def normalize_where!(options)
@@ -276,10 +270,7 @@ SQL
               options[:aggregated].merge!(opts[:aggregated])
               false
             else
-              !(
-                (aliases[path] || path).match(/\b(count|sum|min|max|avg)\(/i) ||
-                aliases.include?(path)
-              )
+              !(aliases.include?(path) || path.match(/\b(count|sum|min|max|avg)\(/i))
             end
           end
         end
