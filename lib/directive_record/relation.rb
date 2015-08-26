@@ -13,7 +13,7 @@ module DirectiveRecord
       options.merge(
         {
           :select => (select.blank? ? ".*" : select),
-          :where => where_values.collect{|x| sql_aliases_to_paths(x)},
+          :where => where_values.collect{|x| sql_aliases_to_paths(x)} + [options[:where]].flatten.compact,
           :group_by => group_values.collect{|x| sql_aliases_to_paths(x)},
           :order_by => order_values.collect{|x| sql_aliases_to_paths(x)},
           :limit => limit_value,
