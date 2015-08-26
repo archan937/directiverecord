@@ -1,5 +1,9 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.31 (August 26, 2015)
+
+* Improved the :group_by, :having and :order_by option correction
+
 == Version 0.1.30 (August 26, 2015)
 
 * Made the :group_by, :having and :order_by option correction more strict

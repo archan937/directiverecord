@@ -1,7 +1,7 @@
 module DirectiveRecord
   MAJOR = 0
   MINOR = 1
-  TINY  = 30
+  TINY  = 31
 
   VERSION = [MAJOR, MINOR, TINY].join(".")
 end
