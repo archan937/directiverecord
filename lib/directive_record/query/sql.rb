@@ -253,7 +253,7 @@ SQL
       end
 
       def normalize_where!(options)
-        regexp, aliases = /^\S+/, options[:aliases].invert
+        regexp, aliases = /^\S+/, options[:aliases].to_a.flatten.uniq.sort
 
         where, having = (options[:where] || []).partition do |statement|
           !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
