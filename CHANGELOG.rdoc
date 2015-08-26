@@ -1,5 +1,11 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.30 (August 26, 2015)
+
+* Made the :group_by, :having and :order_by option correction more strict
+* Respecting optionally passed :where option when invoking #(to_)qry on a relation scope
+* Improved distinguishing WHERE from HAVING statements
+
 == Version 0.1.29 (August 17, 2015)
 
 * Not normalizing select option again after having encountered new calculated columns in the GROUP BY statement, instead just register the alias
