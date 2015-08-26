@@ -48,7 +48,7 @@ module DirectiveRecord
           keys.each do |key|
             if value = options[key]
               value = value.join delimiter
-              aliases.each{|pattern, replacement| value.gsub! pattern, replacement}
+              aliases.each{|pattern, replacement| value.gsub! /(?=\b|\s)#{Regexp.escape pattern}(?=\b|\s)/, replacement}
               options[key] = value
             end
           end

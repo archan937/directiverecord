@@ -24,7 +24,7 @@ module DirectiveRecord
         [:group_by, :having, :order_by].each do |key|
           if value = options[key]
             value = value.join ", "
-            aliases.each{|pattern, replacement| value.gsub! pattern, replacement}
+            aliases.each{|pattern, replacement| value.gsub! /(?=\b|\s)#{Regexp.escape pattern}(?=\b|\s)/, replacement}
             options[key] = value
           end
         end
