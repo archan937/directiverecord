@@ -1,5 +1,10 @@
 = DirectiveRecord CHANGELOG
 
+== Version 0.1.32 (October 23, 2015)
+
+* Added #qry_value and #qry_values
+* Improved detecting quotations (see http://stackoverflow.com/questions/171480/regex-grabbing-values-between-quotation-marks)
+
 == Version 0.1.31 (August 26, 2015)
 
 * Improved the :group_by, :having and :order_by option correction
