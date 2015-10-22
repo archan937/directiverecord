@@ -257,7 +257,7 @@ SQL
 
         where, having = (options[:where] || []).partition do |statement|
           !options[:aggregated].keys.include?(statement.strip.match(regexp).to_s) &&
-          statement.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ")
+          statement.gsub(/(["'])(?:(?=(\\?))\2.)*?\1/, " ")
                    .split(/\b(and|or)\b/i).reject{|sql| %w(and or).include? sql.downcase}
                    .collect{|sql| sql = sql.strip; (sql[0] == "(" && sql[-1] == ")" ? sql[1..-1] : sql)}
                    .all? do |sql|
@@ -373,7 +373,7 @@ SQL
         [:select, :where, :group_by, :having, :order_by].inject([]) do |paths, key|
           if value = options[key]
             value = value.join " " if value.is_a?(Array)
-            paths.concat value.gsub(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/, " ").gsub(/sub:[a-zA-Z_]+\.[a-zA-Z_\.]+/, " ").scan(/[a-zA-Z_]+\.[a-zA-Z_\.]+/).collect{|x| x.split(".")[0..-2].join "."}
+            paths.concat value.gsub(/(["'])(?:(?=(\\?))\2.)*?\1/, " ").gsub(/sub:[a-zA-Z_]+\.[a-zA-Z_\.]+/, " ").scan(/[a-zA-Z_]+\.[a-zA-Z_\.]+/).collect{|x| x.split(".")[0..-2].join "."}
           else
             paths
           end
