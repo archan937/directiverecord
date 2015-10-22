@@ -13,5 +13,13 @@ module ActiveRecord
       klass.qry qry_options(*args)
     end
 
+    def qry_value(*args)
+      klass.qry_value qry_options(*args)
+    end
+
+    def qry_values(*args)
+      klass.qry_values qry_options(*args)
+    end
+
   end
 end
