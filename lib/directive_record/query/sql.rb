@@ -74,7 +74,7 @@ SQL
       end
 
       def to_options(args)
-        options = args.extract_options!.deep_dup
+        options = args.extract_options!.except(:connection).deep_dup
         options.reverse_merge! :select => (args.empty? ? "*" : args)
 
         [:select, :where, :group_by, :order_by].each do |key|
